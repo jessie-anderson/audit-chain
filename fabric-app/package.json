@@ -1,0 +1,37 @@
+{
+  "name": "audit-chain",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jessie-anderson/audit-chain.git"
+  },
+  "description": "app communicating with Hyperledger Fabric blockchain network containing EHR audit logs",
+  "author": "Jessie Anderson",
+  "main": "app/app.js",
+  "scripts": {
+    "dev": "nodemon app/app.js --exec babel-node",
+    "start": "babel-node app/app.js",
+    "build": "babel app -d build"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.3",
+    "ejs": "^2.5.6",
+    "express": "^4.15.2",
+    "fabric-ca-client": "^1.1.0-preview",
+    "fabric-client": "^1.1.0-preview"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3",
+    "nodemon": "^1.11.0"
+  }
+}
