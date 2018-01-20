@@ -7,11 +7,11 @@
  * Enroll the admin user
  */
 
-import * as FabricClient from 'fabric-client'
-import * as FabricCAClient from 'fabric-ca-client'
+import FabricClient from 'fabric-client'
+import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
 
-export default function enrollAdmin() {
+export default function enrollAdmin(req, res) {
   const fabricClient = new FabricClient()
   let fabricCAClient = null
   let adminUser = null
@@ -39,7 +39,8 @@ export default function enrollAdmin() {
 
       // first check to see if the admin is already enrolled
     return fabricClient.getUserContext('admin', true)
-  }).then((userFromStore) => {
+  })
+  .then((userFromStore) => {
     if (userFromStore && userFromStore.isEnrolled()) {
       console.log('Successfully loaded admin from persistence')
       adminUser = userFromStore
@@ -63,6 +64,7 @@ export default function enrollAdmin() {
         return fabricClient.setUserContext(adminUser)
       })
       .catch((err) => {
+        res.json({ error: `${err}` })
         console.error(`Failed to enroll and persist admin. Error: ${err.stack}` ? err.stack : err)
         throw new Error('Failed to enroll admin')
       })
@@ -70,8 +72,10 @@ export default function enrollAdmin() {
   })
   .then(() => {
     console.log(`Assigned the admin user to the fabric client ::${adminUser.toString()}`)
+    res.json({ message: 'success' })
   })
   .catch((err) => {
+    res.json({ error: `${err}` })
     console.error(`Failed to enroll admin: ${err}`)
   })
 }

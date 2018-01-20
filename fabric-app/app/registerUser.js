@@ -7,11 +7,11 @@
  * Register and Enroll a user
  */
 
-import * as FabricClient from 'fabric-client'
-import * as FabricCAClient from 'fabric-ca-client'
+import FabricClient from 'fabric-client'
+import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
 
-export default function enrollUser() {
+export default function registerUser(req, res) {
   //
   const fabricClient = new FabricClient()
   let fabricCAClient = null
@@ -48,7 +48,7 @@ export default function enrollUser() {
 
       // at this point we should have the admin user
       // first need to register the user with the CA server
-    return fabricCAClient.register({ enrollmentID: 'user1', affiliation: 'org1.department1' }, adminUser)
+    return fabricCAClient.register({ enrollmentID: 'user1', affiliation: 'org1.department1', role: 'client' }, adminUser)
   })
   .then((secret) => {
       // next we need to enroll the user with CA server
@@ -70,9 +70,11 @@ export default function enrollUser() {
     return fabricClient.setUserContext(memberUser)
   })
   .then(() => {
-    console.log('User1 was successfully registered and enrolled and is ready to intreact with the fabric network')
+    res.json({ message: 'success' })
+    console.log('User1 was successfully registered and enrolled and is ready to interact with the fabric network')
   })
   .catch((err) => {
+    res.json({ error: `${err}` })
     console.error(`Failed to register: ${err}`)
     if (err.toString().indexOf('Authorization') > -1) {
       console.error(`${'Authorization failures may be caused by having admin credentials from a previous CA instance.\n' +
