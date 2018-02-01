@@ -1,4 +1,4 @@
-import query from '../query'
+import transaction from '../transaction'
 
 export default function createLog(req, res) {
   const params = req.body
@@ -20,7 +20,7 @@ export default function createLog(req, res) {
       params.organizationNpi,
     ],
   }
-  query(request, (error, response) => {
+  transaction(request, (error, response) => {
     if (error) {
       console.log(error)
       res.json(error)

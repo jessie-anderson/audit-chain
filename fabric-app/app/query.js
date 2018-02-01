@@ -25,7 +25,7 @@ export default function query(request, fn) {
   })
   .then((result) => {
     console.log('Response: ', result[0].toString())
-    fn(null, result)
+    fn(null, result[0].toString())
   })
   .catch((error) => {
     console.log('Error: ', error)

@@ -48,6 +48,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
     return s.getAllLogs(APIstub)
   } else if function == "getLogById" {
 		return s.getLogById(APIstub, args)
+	} else if function == "sayHello" {
+		return s.sayHello(APIstub)
 	} // else if function == "getLogsByPatient" {
 	// 	return s.getLogsByPatient(APIstub)
 	// } else if function == "getLogsByUser" {
@@ -96,15 +98,12 @@ func (s *SmartContract) createLog(APIstub shim.ChaincodeStubInterface, args []st
 
   log := AuditLog{ActionType: args[0], Time: args[1], UserID: userId, PatientID: patientId, DataType: args[4], OriginalAuthorID: origAuthId, DataField: args[6], Data: args[7], EntryMethod: args[8], UserNPI: userNpi, OriginalAuthorNPI: origAuthNpi, OrganizationNPI: orgNpi}
   logAsBytes, _ := json.Marshal(log)
-  putErr := APIstub.PutState(fmt.Sprintf("%d", s.LogID), logAsBytes)
+  putErr := APIstub.PutState(strconv.Itoa(s.LogID), logAsBytes)
 	if (putErr != nil) {
 		return shim.Error(putErr.Error())
 	}
 	s.LogID = s.LogID + 1
-
-	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("%d", s.LogID))
-  return shim.Success(logAsBytes)
+	return shim.Success([]byte(strconv.Itoa(s.LogID - 1)))
 }
 
 func (s *SmartContract) getAllLogs(APIstub shim.ChaincodeStubInterface) sc.Response {
@@ -153,6 +152,10 @@ func (s *SmartContract) getLogById(APIstub shim.ChaincodeStubInterface, args []s
 	}
 
 	return shim.Success(res)
+}
+
+func (s *SmartContract) sayHello(APIstub shim.ChaincodeStubInterface) sc.Response {
+	return shim.Success([]byte("hello"))
 }
 
 func main() {
