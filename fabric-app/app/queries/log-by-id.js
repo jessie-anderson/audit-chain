@@ -2,7 +2,7 @@ import query from '../query'
 
 export default function getLogById(req, res) {
   const request = {
-    chaincodeId: 'audit-chaincode',
+    chaincodeId: 'updates-in-state',
     fcn: 'getLogById',
     args: [
       req.params.logid,

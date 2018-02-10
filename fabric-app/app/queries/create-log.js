@@ -2,22 +2,25 @@ import transaction from '../transaction'
 
 export default function createLog(req, res) {
   const params = req.body
+  const log = {
+    actionType: params.actionType,
+    time: params.time,
+    userId: params.userId,
+    patientId: params.patientId,
+    dataType: params.dataType,
+    originalAuthorId: params.originalAuthorId,
+    dataField: params.dataField,
+    data: params.data,
+    entryMethod: params.entryMethod,
+    userNpi: params.userNpi,
+    originalAuthorNpi: params.originalAuthorNpi,
+    organizationNpi: params.organizationNpi,
+  }
   const request = {
-    chaincodeId: 'audit-chaincode',
+    chaincodeId: 'updates-in-state',
     fcn: 'createLog',
     args: [
-      params.actionType,
-      params.time,
-      params.userId,
-      params.patientId,
-      params.dataType,
-      params.originalAuthorId,
-      params.dataField,
-      params.data,
-      params.entryMethod,
-      params.userNpi,
-      params.originalAuthorNpi,
-      params.organizationNpi,
+      log,
     ],
   }
   transaction(request, (error, response) => {

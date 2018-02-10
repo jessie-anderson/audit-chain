@@ -2,7 +2,7 @@ import query from '../query'
 
 export default function getAllLogs(req, res) {
   const request = {
-    chaincodeId: 'audit-chaincode',
+    chaincodeId: 'updates-in-state',
     fcn: 'getAllLogs',
     args: [],
   }
