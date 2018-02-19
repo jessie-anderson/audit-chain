@@ -24,10 +24,15 @@ export default function transaction(request, fn) {
     if (!user || !user.isEnrolled()) {
       throw new Error('Failed to get user 1')
     }
+    return user.getCryptoSuite().generateKey({ ephemeral: true, private: false })
+  })
+  .then((k) => {
+    console.log(k)
     txId = fabricClient.newTransactionID()
     console.log('Assigning new transaction ID: ', txId)
     request.txId = txId
     request.chainId = 'mychannel'
+    console.log(request)
     return channel.sendTransactionProposal(request)
   })
   .then((result) => {

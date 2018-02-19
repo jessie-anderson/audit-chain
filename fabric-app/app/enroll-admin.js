@@ -49,7 +49,7 @@ export default function enrollAdmin(req, res) {
           // need to enroll it with CA server
       return fabricCAClient.enroll({
         enrollmentID: 'admin',
-        enrollmentSecret: 'adminpw',
+        enrollmentSecret: 'adminpassword',
       })
       .then((enrollment) => {
         console.log('Successfully enrolled admin user "admin"')

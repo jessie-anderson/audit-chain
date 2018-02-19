@@ -70,15 +70,15 @@ export default function registerUser(req, res) {
     return fabricClient.setUserContext(memberUser)
   })
   .then(() => {
-    res.json({ message: 'success' })
     console.log('User1 was successfully registered and enrolled and is ready to interact with the fabric network')
+    res.json({ message: 'success' })
   })
   .catch((err) => {
-    res.json({ error: `${err}` })
     console.error(`Failed to register: ${err}`)
     if (err.toString().indexOf('Authorization') > -1) {
       console.error(`${'Authorization failures may be caused by having admin credentials from a previous CA instance.\n' +
       'Try again after deleting the contents of the store directory '}${storePath}`)
     }
+    res.json({ error: `${err}` })
   })
 }
