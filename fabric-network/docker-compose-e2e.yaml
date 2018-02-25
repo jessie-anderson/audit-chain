@@ -6,7 +6,7 @@
 version: '2'
 
 networks:
-  byfn:
+  audit_chain:
 services:
   ca0:
     image: hyperledger/fabric-ca
@@ -23,7 +23,7 @@ services:
       - ./crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
     container_name: ca_peerOrg1
     networks:
-      - byfn
+      - audit_chain
 
   ca1:
     image: hyperledger/fabric-ca
@@ -40,7 +40,7 @@ services:
       - ./crypto-config/peerOrganizations/org2.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
     container_name: ca_peerOrg2
     networks:
-      - byfn
+      - audit_chain
 
   orderer.example.com:
     extends:
@@ -48,7 +48,7 @@ services:
       service: orderer.example.com
     container_name: orderer.example.com
     networks:
-      - byfn
+      - audit_chain
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -56,7 +56,7 @@ services:
       file:  base/docker-compose-base.yaml
       service: peer0.org1.example.com
     networks:
-      - byfn
+      - audit_chain
 
   peer1.org1.example.com:
     container_name: peer1.org1.example.com
@@ -64,7 +64,7 @@ services:
       file:  base/docker-compose-base.yaml
       service: peer1.org1.example.com
     networks:
-      - byfn
+      - audit_chain
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
@@ -72,7 +72,7 @@ services:
       file:  base/docker-compose-base.yaml
       service: peer0.org2.example.com
     networks:
-      - byfn
+      - audit_chain
 
   peer1.org2.example.com:
     container_name: peer1.org2.example.com
@@ -80,7 +80,7 @@ services:
       file:  base/docker-compose-base.yaml
       service: peer1.org2.example.com
     networks:
-      - byfn
+      - audit_chain
 
   cli:
     container_name: cli
@@ -99,13 +99,13 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-    command: /bin/bash -c './scripts/script.sh ${CHANNEL_NAME} ${DELAY}; sleep $TIMEOUT'
+    command: /bin/bash
     volumes:
-        - /var/run/:/host/var/run/
-        - ./../chaincode/:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go
-        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
-        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
-        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+      - /var/run/:/host/var/run/
+      - ./../chaincode/:/opt/gopath/src/github.com/
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
     depends_on:
       - orderer.example.com
       - peer0.org1.example.com
@@ -113,4 +113,4 @@ services:
       - peer0.org2.example.com
       - peer1.org2.example.com
     networks:
-      - byfn
+      - audit_chain

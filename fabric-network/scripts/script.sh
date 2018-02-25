@@ -116,7 +116,7 @@ joinChannel () {
 installChaincode () {
 	PEER=$1
 	setGlobals $PEER
-	peer chaincode install -n $2 -v 1.0 -p github.com/hyperledger/fabric/examples/chaincode/go/$2 >&log.txt
+	peer chaincode install -n mycc -v 1.0 -p github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02 >&log.txt
 	res=$?
 	cat log.txt
         verifyResult $res "Chaincode installation on remote peer PEER$PEER has Failed"
@@ -130,9 +130,9 @@ instantiateChaincode () {
 	# while 'peer chaincode' command can get the orderer endpoint from the peer (if join was successful),
 	# lets supply it directly as we know it using the "-o" option
 	if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
-		peer chaincode instantiate -o orderer.example.com:7050 -C $CHANNEL_NAME -n $2 -v 1.0 -c '{"Args":[""]}' -P "OR	('Org1MSP.member','Org2MSP.member')" >&log.txt
+		peer chaincode instantiate -o orderer.example.com:7050 -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -P "OR	('Org1MSP.member','Org2MSP.member')" >&log.txt
 	else
-		peer chaincode instantiate -o orderer.example.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n $2 -v 1.0 -c '{"Args":[""]}' -P "OR	('Org1MSP.member','Org2MSP.member')" >&log.txt
+		peer chaincode instantiate -o orderer.example.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -P "OR	('Org1MSP.member','Org2MSP.member')" >&log.txt
 	fi
 	res=$?
 	cat log.txt
@@ -203,29 +203,29 @@ updateAnchorPeers 2
 
 ## Install chaincode on Peer0/Org1 and Peer2/Org2
 echo "Installing chaincode on org1/peer0..."
-installChaincode 0 encrypted-updates
+installChaincode 0
 echo "Install chaincode on org2/peer2..."
-installChaincode 2 encrypted-updates
+installChaincode 2
 
 #Instantiate chaincode on Peer2/Org2
-# echo "Instantiating chaincode on org2/peer2..."
-# instantiateChaincode 2
-#
-# #Query on chaincode on Peer0/Org1
-# echo "Querying chaincode on org1/peer0..."
-# chaincodeQuery 0 100
-#
-# #Invoke on chaincode on Peer0/Org1
-# echo "Sending invoke transaction on org1/peer0..."
-# chaincodeInvoke 0
+echo "Instantiating chaincode on org2/peer2..."
+instantiateChaincode 2
+
+#Query on chaincode on Peer0/Org1
+echo "Querying chaincode on org1/peer0..."
+chaincodeQuery 0 100
+
+#Invoke on chaincode on Peer0/Org1
+echo "Sending invoke transaction on org1/peer0..."
+chaincodeInvoke 0
 
 ## Install chaincode on Peer3/Org2
 echo "Installing chaincode on org2/peer3..."
-installChaincode 3 encrypted-updates
+installChaincode 3
 
 #Query on chaincode on Peer3/Org2, check if the result is 90
-# echo "Querying chaincode on org2/peer3..."
-# chaincodeQuery 3 90
+echo "Querying chaincode on org2/peer3..."
+chaincodeQuery 3 90
 
 echo
 echo "========= All GOOD, BYFN execution completed =========== "
