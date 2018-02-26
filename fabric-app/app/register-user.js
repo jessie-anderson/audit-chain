@@ -33,7 +33,7 @@ export default function registerUser(req, res) {
     cryptoSuite.setCryptoKeyStore(cryptoStore)
     fabricClient.setCryptoSuite(cryptoSuite)
       // be sure to change the http to https when the CA is running TLS enabled
-    fabricCAClient = new FabricCAClient('http://localhost:7054', null, '', cryptoSuite)
+    fabricCAClient = new FabricCAClient('https://localhost:7054', null, '', cryptoSuite)
 
       // first check to see if the admin is already enrolled
     return fabricClient.getUserContext('admin', true)

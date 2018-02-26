@@ -35,7 +35,7 @@ export default function enrollAdmin(req, res) {
       verify: false,
     }
       // be sure to change the http to https when the CA is running TLS enabled
-    fabricCAClient = new FabricCAClient('http://localhost:7054', tlsOptions, 'ca.example.com', cryptoSuite)
+    fabricCAClient = new FabricCAClient('https://localhost:7054', tlsOptions, 'ca-org1', cryptoSuite)
 
       // first check to see if the admin is already enrolled
     return fabricClient.getUserContext('admin', true)
@@ -49,7 +49,7 @@ export default function enrollAdmin(req, res) {
           // need to enroll it with CA server
       return fabricCAClient.enroll({
         enrollmentID: 'admin',
-        enrollmentSecret: 'adminpassword',
+        enrollmentSecret: 'adminpw',
       })
       .then((enrollment) => {
         console.log('Successfully enrolled admin user "admin"')
