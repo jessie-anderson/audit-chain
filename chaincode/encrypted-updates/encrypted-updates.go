@@ -1,7 +1,7 @@
 package main
 
 import (
-  // "bytes"
+  "bytes"
 	"encoding/json"
 	// "strconv"
   "fmt"
@@ -149,23 +149,22 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 	if historyErr != nil {
 		return shim.Error(historyErr.Error())
 	}
-	var historyItems [][]byte
+
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
 	for historyIter.HasNext() {
 		item, err := historyIter.Next()
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		itemAsBytes, bytesErr := json.Marshal(item)
-		if bytesErr != nil {
-			return shim.Error(bytesErr.Error())
+		buffer.WriteString(string(item.Value))
+		if (historyIter.HasNext()) {
+			buffer.WriteString(",")
 		}
-		historyItems = append(historyItems, itemAsBytes)
 	}
-	historyAsBytes, marshalErr := json.Marshal(historyItems)
-	if marshalErr != nil {
-		return shim.Error(marshalErr.Error())
-	}
-	return shim.Success(historyAsBytes)
+	buffer.WriteString("]")
+	return shim.Success(buffer.Bytes())
 }
 
 // func (s *SmartContract) EncryptAndPut(APIstub shim.ChaincodeStubInterface, args []string, nByteArr []byte, eByteArr []byte) sc.Response {

@@ -48,19 +48,19 @@ export default function registerUser(req, res) {
 
       // at this point we should have the admin user
       // first need to register the user with the CA server
-    return fabricCAClient.register({ enrollmentID: 'user1', affiliation: 'org1.department1', role: 'client' }, adminUser)
+    return fabricCAClient.register({ enrollmentID: req.body.username, affiliation: 'org2.department1', role: 'client' }, adminUser)
   })
   .then((secret) => {
       // next we need to enroll the user with CA server
-    console.log(`Successfully registered user1 - secret:${secret}`)
+    console.log(`Successfully registered req.body.username - secret:${secret}`)
 
-    return fabricCAClient.enroll({ enrollmentID: 'user1', enrollmentSecret: secret })
+    return fabricCAClient.enroll({ enrollmentID: req.body.username, enrollmentSecret: secret })
   })
   .then((enrollment) => {
     console.log(enrollment.certificate)
-    console.log('Successfully enrolled member user "user1" ')
+    console.log(`Successfully enrolled member user ${req.body.username}`)
     return fabricClient.createUser(
-      { username: 'user1',
+      { username: req.body.username,
         mspid: 'Org1MSP',
         cryptoContent: { privateKeyPEM: enrollment.key.toBytes(), signedCertPEM: enrollment.certificate },
       })
@@ -71,7 +71,7 @@ export default function registerUser(req, res) {
     return fabricClient.setUserContext(memberUser)
   })
   .then(() => {
-    console.log('User1 was successfully registered and enrolled and is ready to interact with the fabric network')
+    console.log(`${req.body.username} was successfully registered and enrolled and is ready to interact with the fabric network`)
     res.json({ message: 'success' })
   })
   .catch((err) => {

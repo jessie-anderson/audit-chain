@@ -2,7 +2,7 @@ import FabricClient from 'fabric-client'
 import path from 'path'
 import fs from 'fs'
 
-export default function transaction(request, fn) {
+export default function transaction(request, username, fn) {
   const fabricClient = new FabricClient()
   const channel = fabricClient.newChannel('mychannel')
   const peerPem = fs.readFileSync('/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem')
@@ -27,11 +27,11 @@ export default function transaction(request, fn) {
     const cryptoStore = FabricClient.newCryptoKeyStore({ path: keyStorePath })
     cryptoSuite.setCryptoKeyStore(cryptoStore)
     fabricClient.setCryptoSuite(cryptoSuite)
-    return fabricClient.getUserContext('user1', true)
+    return fabricClient.getUserContext(username, true)
   })
   .then((user) => {
     if (!user || !user.isEnrolled()) {
-      throw new Error('Failed to get user 1')
+      throw new Error(`Failed to get ${username}`)
     }
     return user.getCryptoSuite().generateKey({ ephemeral: true, private: false })
   })

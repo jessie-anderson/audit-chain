@@ -2,7 +2,10 @@ import query from './query'
 import transaction from './transaction'
 
 export function recordUpdate(req, res) {
-  const args = formatArgs(req.body)
+  const keyArgs = Object.keys(req.body).filter((k) => {
+    return k !== 'username'
+  })
+  const args = formatArgs(req.body, keyArgs)
   args.unshift(req.params.recordid)
 
   const request = {
@@ -11,7 +14,7 @@ export function recordUpdate(req, res) {
     args,
   }
 
-  transaction(request, (err, result) => {
+  transaction(request, req.body.username, (err, result) => {
     if (err) {
       console.error(err)
       res.status(500).send(err)
@@ -28,7 +31,7 @@ export function historyForRecord(req, res) {
     args: [req.params.recordid],
   }
 
-  query(request, (err, result) => {
+  query(request, 'user1', (err, result) => {
     if (err) {
       console.error(err)
       res.status(500).send(err)
@@ -38,14 +41,12 @@ export function historyForRecord(req, res) {
   })
 }
 
-function formatArgs(object) {
+function formatArgs(object, keyArgs) {
   if (typeof object !== 'object') {
     return new Error('Argument is not an object')
   }
 
-  return Object.keys(object).filter((k) => {
-    return k !== 'recordId'
-  }).map((k) => {
+  return keyArgs.map((k) => {
     return `${k}:${object[k]}`
   })
 }
