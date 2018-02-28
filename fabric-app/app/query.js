@@ -1,10 +1,15 @@
 import FabricClient from 'fabric-client'
 import path from 'path'
+import fs from 'fs'
 
 export default function query(request, fn) {
   const fabricClient = new FabricClient()
   const channel = fabricClient.newChannel('mychannel')
-  const peer = fabricClient.newPeer('grpc://localhost:7051')
+  const peerPem = fs.readFileSync('/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem')
+  const peer = fabricClient.newPeer('grpcs://localhost:7051', {
+    pem: Buffer.from(peerPem).toString(),
+    'ssl-target-name-override': 'peer0.org1.example.com',
+  })
   const keyStorePath = path.join(__dirname, 'hfc-key-store')
   channel.addPeer(peer)
 

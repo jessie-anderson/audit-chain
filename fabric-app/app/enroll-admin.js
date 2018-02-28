@@ -52,6 +52,7 @@ export default function enrollAdmin(req, res) {
         enrollmentSecret: 'adminpw',
       })
       .then((enrollment) => {
+        console.log(enrollment.certificate)
         console.log('Successfully enrolled admin user "admin"')
         return fabricClient.createUser(
           { username: 'admin',

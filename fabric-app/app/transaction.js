@@ -1,11 +1,20 @@
 import FabricClient from 'fabric-client'
 import path from 'path'
+import fs from 'fs'
 
 export default function transaction(request, fn) {
   const fabricClient = new FabricClient()
   const channel = fabricClient.newChannel('mychannel')
-  const peer = fabricClient.newPeer('grpc://localhost:7051')
-  const order = fabricClient.newOrderer('grpc://localhost:7050')
+  const peerPem = fs.readFileSync('/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem')
+  const peer = fabricClient.newPeer('grpcs://localhost:7051', {
+    pem: Buffer.from(peerPem).toString(),
+    'ssl-target-name-override': 'peer0.org1.example.com',
+  })
+  const orderPem = fs.readFileSync('/Users/Jessie/audit-chain/fabric-network/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem')
+  const order = fabricClient.newOrderer('grpcs://localhost:7050', {
+    pem: Buffer.from(orderPem).toString(),
+    'ssl-target-name-override': 'orderer.example.com',
+  })
   const keyStorePath = path.join(__dirname, 'hfc-key-store')
   let txId
   channel.addPeer(peer)
@@ -27,12 +36,11 @@ export default function transaction(request, fn) {
     return user.getCryptoSuite().generateKey({ ephemeral: true, private: false })
   })
   .then((k) => {
-    console.log(k)
     txId = fabricClient.newTransactionID()
     console.log('Assigning new transaction ID: ', txId)
     request.txId = txId
     request.chainId = 'mychannel'
-    console.log(request)
+    // console.log(request)
     return channel.sendTransactionProposal(request)
   })
   .then((result) => {
@@ -55,8 +63,12 @@ export default function transaction(request, fn) {
       const sendPromise = channel.sendTransaction(txRequest)
       promises.push(sendPromise)
 
+      const hubPem = fs.readFileSync('/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem')
       const eventHub = fabricClient.newEventHub()
-      eventHub.setPeerAddr('grpc://localhost:7053')
+      eventHub.setPeerAddr('grpcs://localhost:7053', {
+        pem: Buffer.from(hubPem).toString(),
+        'ssl-target-name-override': 'peer0.org1.example.com',
+      })
 
       const txPromise = new Promise((resolve, reject) => {
         const handle = setTimeout(() => {

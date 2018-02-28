@@ -57,6 +57,7 @@ export default function registerUser(req, res) {
     return fabricCAClient.enroll({ enrollmentID: 'user1', enrollmentSecret: secret })
   })
   .then((enrollment) => {
+    console.log(enrollment.certificate)
     console.log('Successfully enrolled member user "user1" ')
     return fabricClient.createUser(
       { username: 'user1',
