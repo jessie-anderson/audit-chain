@@ -48,13 +48,21 @@ export default function registerUser(req, res) {
 
       // at this point we should have the admin user
       // first need to register the user with the CA server
-    return fabricCAClient.register({ enrollmentID: req.body.username, affiliation: 'org2.department1', role: 'client' }, adminUser)
+    return fabricCAClient.register({
+      enrollmentID: req.body.username,
+      enrollmentSecret: req.body.password,
+      affiliation: 'org2.department1',
+      role: 'client',
+    }, adminUser)
   })
   .then((secret) => {
       // next we need to enroll the user with CA server
     console.log(`Successfully registered req.body.username - secret:${secret}`)
 
-    return fabricCAClient.enroll({ enrollmentID: req.body.username, enrollmentSecret: secret })
+    return fabricCAClient.enroll({
+      enrollmentID: req.body.username,
+      enrollmentSecret: secret,
+    })
   })
   .then((enrollment) => {
     console.log(enrollment.certificate)
@@ -62,7 +70,10 @@ export default function registerUser(req, res) {
     return fabricClient.createUser(
       { username: req.body.username,
         mspid: 'Org1MSP',
-        cryptoContent: { privateKeyPEM: enrollment.key.toBytes(), signedCertPEM: enrollment.certificate },
+        cryptoContent: {
+          privateKeyPEM: enrollment.key.toBytes(),
+          signedCertPEM: enrollment.certificate,
+        },
       })
   })
   .then((user) => {

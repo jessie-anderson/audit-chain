@@ -1,6 +1,8 @@
 import query from './query'
 import transaction from './transaction'
 
+const fields = new Set(['actionType', 'userId', 'patientId', 'dataType', 'originalAuthorId', ''])
+
 export function recordUpdate(req, res) {
   const keyArgs = Object.keys(req.body).filter((k) => {
     return k !== 'username'

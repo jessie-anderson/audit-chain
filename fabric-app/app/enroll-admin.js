@@ -38,7 +38,7 @@ export default function enrollAdmin(req, res) {
     fabricCAClient = new FabricCAClient('https://localhost:7054', tlsOptions, 'ca-org1', cryptoSuite)
 
       // first check to see if the admin is already enrolled
-    return fabricClient.getUserContext('admin', true)
+    return fabricClient.getUserContext(req.body.username, true)
   })
   .then((userFromStore) => {
     if (userFromStore && userFromStore.isEnrolled()) {
@@ -48,16 +48,19 @@ export default function enrollAdmin(req, res) {
     } else {
           // need to enroll it with CA server
       return fabricCAClient.enroll({
-        enrollmentID: 'admin',
-        enrollmentSecret: 'adminpw',
+        enrollmentID: req.body.username,
+        enrollmentSecret: req.body.password,
       })
       .then((enrollment) => {
         console.log(enrollment.certificate)
         console.log('Successfully enrolled admin user "admin"')
         return fabricClient.createUser(
-          { username: 'admin',
+          { username: req.body.username,
             mspid: 'Org1MSP',
-            cryptoContent: { privateKeyPEM: enrollment.key.toBytes(), signedCertPEM: enrollment.certificate },
+            cryptoContent: {
+              privateKeyPEM: enrollment.key.toBytes(),
+              signedCertPEM: enrollment.certificate,
+            },
           })
       })
       .then((user) => {

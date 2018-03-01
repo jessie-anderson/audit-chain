@@ -25,7 +25,6 @@ type SmartContract struct {
 
 /** EventDetails
 	* ActionType: edit, delete, create, view
-	* Time: time of action
 	* UserID: id of user who performed action
 	* PatientID: id of patient whose record is concerned
 	* DataType: data type of record, e.g. chart
@@ -40,7 +39,6 @@ type SmartContract struct {
 
 type EventDetails struct {
 	ActionType string `json:"actionType"`
-  Time string `json:"time"`
   UserID string `json:"userId"`
 	PatientID string `json:"patientId"`
 	DataType string `json:"dataType"`
@@ -133,7 +131,7 @@ func (s *SmartContract) CreateEventDetails(args []string) (EventDetails, error) 
 func (s *SmartContract) IsValidField(field string) bool {
 	switch field {
 		case
-		"actionType", "time", "userId", "patientId", "dataType", "originalAuthorId",
+		"actionType", "userId", "patientId", "dataType", "originalAuthorId",
 		"dataField", "data", "entryMethod", "userNpi", "originalAuthorNpi",
 		"organizationNpi":
 		return true
@@ -158,6 +156,9 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 		if err != nil {
 			return shim.Error(err.Error())
 		}
+    fmt.Println("================================================================")
+    fmt.Println(item)
+    fmt.Println("================================================================")
 		buffer.WriteString(string(item.Value))
 		if (historyIter.HasNext()) {
 			buffer.WriteString(",")
