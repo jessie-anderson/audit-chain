@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import enrollAdmin from './enroll-admin'
 import registerUser from './register-user'
-import { recordUpdate, historyForRecord } from './api'
+import { recordUpdate, historyForRecord, getQueryCreator } from './api'
 // import getAllLogs from './queries/all-logs'
 // import createLog from './queries/create-log'
 // import getLogById from './queries/log-by-id'
@@ -23,6 +23,9 @@ rootRouter.route('/registeruser')
 apiRouter.route('/logs/:recordid')
   .post(recordUpdate)
   .get(historyForRecord)
+
+apiRouter.route('/creator')
+  .get(getQueryCreator)
 
 // router.route('/logs')
 //   .get(getAllLogs)

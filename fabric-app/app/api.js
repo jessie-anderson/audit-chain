@@ -55,6 +55,23 @@ export function historyForRecord(req, res) {
   })
 }
 
+export function getQueryCreator(req, res) {
+  const request = {
+    chaincodeId: 'encrypted-updates',
+    fcn: 'getCreator',
+    args: [],
+  }
+
+  query(request, req.user.username, (err, result) => {
+    if (err) {
+      console.error(err)
+      res.status(500).send(err)
+    } else {
+      res.json(result)
+    }
+  })
+}
+
 function formatArgs(object, keyArgs) {
   if (typeof object !== 'object') {
     return new Error('Argument is not an object')

@@ -58,15 +58,13 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
 func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response {
   fn, args := APIstub.GetFunctionAndParameters()
 
-	// if transientErr != nil {
-	// 	return shim.Error(fmt.Sprintf("Error getting transient map: %+v", transientErr))
-	// }
-
 	if fn == "recordUpdate" {
 		return s.RecordUpdate(APIstub, args)
 	} else if fn == "getRecordHistory" {
 		return s.GetRecordHistory(APIstub, args)
-	}
+	} else if fn == "getCreator" {
+    return s.GetCreator(APIstub)
+  }
 
 	return shim.Error(fmt.Sprintf("Unrecognized function %s", fn))
 }

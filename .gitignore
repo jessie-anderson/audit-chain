@@ -3,3 +3,4 @@ fabric-app/node_modules
 fabric-app/app/hfc-key-store
 fabric-app/hfc-key-store
 fabric-network/crypto-config
+fabric-network/channel-artifacts
