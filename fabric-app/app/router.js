@@ -8,20 +8,19 @@ import { recordUpdate, historyForRecord } from './api'
 // import getCreator from './queries/get-creator'
 // import { createAsset, getAsset } from './queries/simple-asset'
 
-const router = Router()
+export const apiRouter = Router()
+export const rootRouter = Router()
 
-router.route('/')
-  .get((req, res) => {
-    res.send('hi\n')
-  })
+// router.route('/signin')
+//   .post(signin)
 
-router.route('/enroll/admin')
+rootRouter.route('/enrolladmin')
   .post(enrollAdmin)
 
-router.route('/enroll/user')
+rootRouter.route('/registeruser')
   .post(registerUser)
 
-router.route('/logs/:recordid')
+apiRouter.route('/logs/:recordid')
   .post(recordUpdate)
   .get(historyForRecord)
 
@@ -40,5 +39,3 @@ router.route('/logs/:recordid')
 //
 // router.route('/transact/simple1')
 //   .post(createAsset)
-
-export default router

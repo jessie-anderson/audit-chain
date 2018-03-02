@@ -1,11 +1,23 @@
 import query from './query'
 import transaction from './transaction'
 
-const fields = new Set(['actionType', 'userId', 'patientId', 'dataType', 'originalAuthorId', ''])
+const fields = new Set([
+  'actionType',
+  'userId',
+  'patientId',
+  'dataType',
+  'originalAuthorId',
+  'dataField',
+  'data',
+  'entryMethod',
+  'userNpi',
+  'originalAuthorNpi',
+  'organizationNpi',
+])
 
 export function recordUpdate(req, res) {
   const keyArgs = Object.keys(req.body).filter((k) => {
-    return k !== 'username'
+    return fields.has(k)
   })
   const args = formatArgs(req.body, keyArgs)
   args.unshift(req.params.recordid)
@@ -16,7 +28,7 @@ export function recordUpdate(req, res) {
     args,
   }
 
-  transaction(request, req.body.username, (err, result) => {
+  transaction(request, req.user.username, (err, result) => {
     if (err) {
       console.error(err)
       res.status(500).send(err)
@@ -33,7 +45,7 @@ export function historyForRecord(req, res) {
     args: [req.params.recordid],
   }
 
-  query(request, 'user1', (err, result) => {
+  query(request, req.user.username, (err, result) => {
     if (err) {
       console.error(err)
       res.status(500).send(err)

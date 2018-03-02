@@ -3,7 +3,6 @@ package main
 import (
   "bytes"
 	"encoding/json"
-	// "strconv"
   "fmt"
   // "crypto/sha256"
   // "crypto/rsa"
@@ -11,11 +10,7 @@ import (
   // "math/big"
   // "encoding/binary"
 	"strings"
-  // "reflect"
   "errors"
-
-	// "github.com/hyperledger/fabric/bccsp"
-	// "github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
 )

@@ -10,6 +10,8 @@
 import FabricClient from 'fabric-client'
 import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
+import jwt from 'jsonwebtoken'
+import moment from 'moment'
 
 export default function registerUser(req, res) {
   //
@@ -83,7 +85,11 @@ export default function registerUser(req, res) {
   })
   .then(() => {
     console.log(`${req.body.username} was successfully registered and enrolled and is ready to interact with the fabric network`)
-    res.json({ message: 'success' })
+    const token = jwt.sign({
+      username: req.body.username,
+      exp: moment().add(1, 'days').valueOf(),
+    }, 'mysecret')
+    res.json(token)
   })
   .catch((err) => {
     console.error(`Failed to register: ${err}`)
