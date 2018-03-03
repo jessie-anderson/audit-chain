@@ -57,18 +57,19 @@ export default function registerUser(req, res) {
       role: 'client',
     }, adminUser)
   })
-  .then((secret) => {
+  .then(() => {
       // next we need to enroll the user with CA server
-    console.log(`Successfully registered req.body.username - secret:${secret}`)
+    console.log(`Successfully registered req.body.username - secret:${req.body.password}`)
 
     return fabricCAClient.enroll({
       enrollmentID: req.body.username,
-      enrollmentSecret: secret,
+      enrollmentSecret: req.body.password,
     })
   })
   .then((enrollment) => {
     console.log(enrollment.certificate)
     console.log(`Successfully enrolled member user ${req.body.username}`)
+    console.log(enrollment)
     return fabricClient.createUser(
       { username: req.body.username,
         mspid: 'Org1MSP',

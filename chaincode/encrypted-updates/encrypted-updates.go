@@ -25,7 +25,7 @@ type SmartContract struct {
 	* DataType: data type of record, e.g. chart
 	* OriginalAuthorID: id of user who authored the change (in case of make-me-the-author funcitonality)
 	* DataField: name of field modified in this LogEntry
-	* Data: new value of DataField
+	* Data: new value of DataField (potentially encrypted?)
 	* EntryMethod: manual, auto-fill, dictation, etc.
 	* UserNPI: National Provider Identity of user performing action
 	* OriginalAuthorNPI: NPI of user who authored change (in case of make-me-the-author functionality)

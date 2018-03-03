@@ -28,14 +28,7 @@ export function recordUpdate(req, res) {
     args,
   }
 
-  transaction(request, req.user.username, (err, result) => {
-    if (err) {
-      console.error(err)
-      res.status(500).send(err)
-    } else {
-      res.json(result)
-    }
-  })
+  transaction(request, req.user.username, handleResult)
 }
 
 export function historyForRecord(req, res) {
@@ -45,14 +38,7 @@ export function historyForRecord(req, res) {
     args: [req.params.recordid],
   }
 
-  query(request, req.user.username, (err, result) => {
-    if (err) {
-      console.error(err)
-      res.status(500).send(err)
-    } else {
-      res.json(result)
-    }
-  })
+  query(request, req.user.username, handleResult)
 }
 
 export function getQueryCreator(req, res) {
@@ -62,14 +48,27 @@ export function getQueryCreator(req, res) {
     args: [],
   }
 
-  query(request, req.user.username, (err, result) => {
-    if (err) {
-      console.error(err)
-      res.status(500).send(err)
-    } else {
-      res.json(result)
-    }
-  })
+  query(request, req.user.username, handleResult)
+}
+
+/*
+* Filter logs by any combination of the following:
+* userId
+* patientId
+* time range
+*/
+export function filterQuery(req, res) {
+  const patientIds = req.params.patientIds
+  const userIds = req.params.patientIds
+  const startTime = req.params.startTime
+  const endTime = req.params.endTime
+  const request = {
+    chaincodeId: 'encrypted-updates',
+    fcn: 'getLogQueryResult',
+    args: [patientIds, userIds, startTime, endTime],
+  }
+
+  query(request, req.user.username, handleResult)
 }
 
 function formatArgs(object, keyArgs) {
@@ -80,4 +79,13 @@ function formatArgs(object, keyArgs) {
   return keyArgs.map((k) => {
     return `${k}:${object[k]}`
   })
+}
+
+function handleResult(err, res) {
+  if (err) {
+    console.error(err)
+    res.status(500).send(err)
+  } else {
+    res.json(res)
+  }
 }

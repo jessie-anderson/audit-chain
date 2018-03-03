@@ -114,3 +114,11 @@ services:
       - peer1.org2.example.com
     networks:
       - byfn
+
+  couchdb:
+    container_name: couchdb
+    extends:
+      file: base/docker-compose-base.yaml
+      service: couchdb
+    networks:
+      - byfn

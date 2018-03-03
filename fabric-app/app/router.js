@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import enrollAdmin from './enroll-admin'
 import registerUser from './register-user'
-import { recordUpdate, historyForRecord, getQueryCreator } from './api'
+import { recordUpdate, historyForRecord, getQueryCreator, filterQuery } from './api'
 // import getAllLogs from './queries/all-logs'
 // import createLog from './queries/create-log'
 // import getLogById from './queries/log-by-id'
@@ -26,6 +26,9 @@ apiRouter.route('/logs/:recordid')
 
 apiRouter.route('/creator')
   .get(getQueryCreator)
+
+apiRouter.route('/logs:userIds:patientIds:startTime:endTime')
+  .get(filterQuery)
 
 // router.route('/logs')
 //   .get(getAllLogs)
