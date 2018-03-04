@@ -21,6 +21,7 @@ export function recordUpdate(req, res) {
   })
   const args = formatArgs(req.body, keyArgs)
   args.unshift(req.params.recordid)
+  console.log(args)
 
   const request = {
     chaincodeId: 'encrypted-updates',
@@ -28,7 +29,9 @@ export function recordUpdate(req, res) {
     args,
   }
 
-  transaction(request, req.user.username, handleResult)
+  transaction(request, req.user.username, (err, result) => {
+    handleResult(err, result, res)
+  })
 }
 
 export function historyForRecord(req, res) {
@@ -38,7 +41,9 @@ export function historyForRecord(req, res) {
     args: [req.params.recordid],
   }
 
-  query(request, req.user.username, handleResult)
+  query(request, req.user.username, (err, result) => {
+    handleResult(err, result, res)
+  })
 }
 
 export function getQueryCreator(req, res) {
@@ -48,7 +53,9 @@ export function getQueryCreator(req, res) {
     args: [],
   }
 
-  query(request, req.user.username, handleResult)
+  query(request, req.user.username, (err, result) => {
+    handleResult(err, result, res)
+  })
 }
 
 /*
@@ -58,17 +65,25 @@ export function getQueryCreator(req, res) {
 * time range
 */
 export function filterQuery(req, res) {
-  const patientIds = req.params.patientIds
-  const userIds = req.params.patientIds
-  const startTime = req.params.startTime
-  const endTime = req.params.endTime
+  const patientIds = req.query.patientIds
+  const userIds = req.query.userIds
+  const startTime = req.query.startTime
+  const endTime = req.query.endTime
+  console.log(req.query)
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getLogQueryResult',
-    args: [patientIds, userIds, startTime, endTime],
+    args: [
+      patientIds || '',
+      userIds || '',
+      startTime || '',
+      endTime || '',
+    ],
   }
 
-  query(request, req.user.username, handleResult)
+  query(request, req.user.username, (err, result) => {
+    handleResult(err, result, res)
+  })
 }
 
 function formatArgs(object, keyArgs) {
@@ -81,11 +96,11 @@ function formatArgs(object, keyArgs) {
   })
 }
 
-function handleResult(err, res) {
+function handleResult(err, result, res) {
   if (err) {
     console.error(err)
     res.status(500).send(err)
   } else {
-    res.json(res)
+    res.json(result)
   }
 }
