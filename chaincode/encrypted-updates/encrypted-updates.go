@@ -223,13 +223,12 @@ func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, a
         return shim.Error(itemErr.Error())
       }
 
-      resultBuffer.WriteString("{\"Value\": \"")
+      resultBuffer.WriteString("{\"value\": ")
       resultBuffer.WriteString(string(item.Value))
-      resultBuffer.WriteString("\", \"Time\": { \"Seconds\": \"")
-      resultBuffer.WriteString(string(item.Timestamp.Seconds))
-      resultBuffer.WriteString("\", \"Nanoseconds\": \"")
-      resultBuffer.WriteString(string(item.Timestamp.Nanos))
-      resultBuffer.WriteString("\"}}")
+      resultBuffer.WriteString(", \"time\": {")
+      resultBuffer.WriteString(fmt.Sprintf("\"seconds\": \"%d\",", item.Timestamp.GetSeconds()))
+      resultBuffer.WriteString(fmt.Sprintf("\"nanoseconds\": \"%d\"", item.Timestamp.GetNanos()))
+      resultBuffer.WriteString("}}")
       if historyIterator.HasNext() {
         resultBuffer.WriteString(",")
       }

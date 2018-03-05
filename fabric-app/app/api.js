@@ -81,8 +81,17 @@ export function filterQuery(req, res) {
     ],
   }
 
+  // TODO: sort by req.query.sortby
+
   query(request, req.user.username, (err, result) => {
-    handleResult(err, result, res)
+    let json
+    if (result) {
+      json = JSON.parse(result)
+      // const retVal = json.map((val) => {
+      //   return val.value
+      // })
+    }
+    handleResult(err, json, res)
   })
 }
 
