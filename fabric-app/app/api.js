@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import query from './query'
 import transaction from './transaction'
 
@@ -81,17 +82,19 @@ export function filterQuery(req, res) {
     ],
   }
 
-  // TODO: sort by req.query.sortby
-
   query(request, req.user.username, (err, result) => {
-    let json
+    let results
     if (result) {
-      json = JSON.parse(result)
-      // const retVal = json.map((val) => {
-      //   return val.value
-      // })
+      results = JSON.parse(result)
+      // sort by time
+      results = _.sortBy(results, (r) => {
+        return r.time.seconds + (r.time.nanoseconds / parseFloat(1000000000))
+      })
+      results.forEach((r) => {
+        r.time = (new Date((r.time.seconds * 1000) + (r.time.nanoseconds / 1000000))).toString()
+      })
     }
-    handleResult(err, json, res)
+    handleResult(err, results, res)
   })
 }
 
