@@ -211,21 +211,9 @@ installChaincode 2
 echo "Instantiating chaincode on org2/peer2..."
 instantiateChaincode 2
 
-#Query on chaincode on Peer0/Org1
-# echo "Querying chaincode on org1/peer0..."
-# chaincodeQuery 0 100
-
-#Invoke on chaincode on Peer0/Org1
-# echo "Sending invoke transaction on org1/peer0..."
-# chaincodeInvoke 0
-
 ## Install chaincode on Peer3/Org2
 echo "Installing chaincode on org2/peer3..."
 installChaincode 3
-
-#Query on chaincode on Peer3/Org2, check if the result is 90
-# echo "Querying chaincode on org2/peer3..."
-# chaincodeQuery 3 90
 
 echo
 echo "========= All GOOD, BYFN execution completed =========== "

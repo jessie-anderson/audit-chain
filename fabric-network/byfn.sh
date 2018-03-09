@@ -120,6 +120,10 @@ function networkUp () {
     docker logs -f cli
     exit 1
   fi
+  echo "##########################################################"
+  echo "################### docker containers ####################"
+  echo "##########################################################"
+  docker ps
   docker logs -f cli
 }
 

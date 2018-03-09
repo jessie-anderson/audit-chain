@@ -50,11 +50,29 @@ services:
     networks:
       - byfn
 
+  couchdb0:
+    extends:
+      file: base/docker-compose-base.yaml
+      service: couchdb0
+    container_name: couchdb0
+    networks:
+      - byfn
+
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
     extends:
       file:  base/docker-compose-base.yaml
       service: peer0.org1.example.com
+    networks:
+      - byfn
+    depends_on:
+      - couchdb0
+
+  couchdb1:
+    extends:
+      file: base/docker-compose-base.yaml
+      service: couchdb1
+    container_name: couchdb1
     networks:
       - byfn
 
@@ -65,12 +83,31 @@ services:
       service: peer1.org1.example.com
     networks:
       - byfn
+    depends_on:
+      - couchdb1
+
+  couchdb2:
+    extends:
+      file: base/docker-compose-base.yaml
+      service: couchdb2
+    container_name: couchdb2
+    networks:
+      - byfn
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
     extends:
       file:  base/docker-compose-base.yaml
       service: peer0.org2.example.com
+    networks:
+      - byfn
+    depends_on:
+      - couchdb2
+
+  couchdb3:
+    extends:
+      file: base/docker-compose-base.yaml
+      service: couchdb3
     networks:
       - byfn
 
@@ -81,6 +118,8 @@ services:
       service: peer1.org2.example.com
     networks:
       - byfn
+    depends_on:
+      - couchdb3
 
   cli:
     container_name: cli
@@ -112,13 +151,5 @@ services:
       - peer1.org1.example.com
       - peer0.org2.example.com
       - peer1.org2.example.com
-    networks:
-      - byfn
-
-  couchdb:
-    container_name: couchdb
-    extends:
-      file: base/docker-compose-base.yaml
-      service: couchdb
     networks:
       - byfn
