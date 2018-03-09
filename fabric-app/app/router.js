@@ -14,12 +14,12 @@ rootRouter.route('/enrolladmin')
 rootRouter.route('/registeruser')
   .post(registerUser)
 
-apiRouter.route('/logs/:recordid')
+apiRouter.route('/logs/:recordid/:peerName')
   .post(recordUpdate)
   .get(historyForRecord)
 
-apiRouter.route('/creator')
+apiRouter.route('/creator/:peerName')
   .get(getQueryCreator)
 
-apiRouter.route('/logs')
+apiRouter.route('/logs/:peerName')
   .get(filterQuery)
