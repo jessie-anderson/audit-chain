@@ -29,7 +29,8 @@
     "jsonwebtoken": "^8.1.1",
     "lodash": "^4.17.5",
     "moment": "^2.20.1",
-    "node-rsa": "^0.4.2"
+    "node-rsa": "^0.4.2",
+    "oauth2-server": "^3.0.0"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",

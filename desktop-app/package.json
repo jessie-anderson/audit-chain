@@ -1,0 +1,34 @@
+{
+  "name": "audit-log-desktop-app",
+  "version": "1.0.0",
+  "description": "Desktop app in electron.js running on audit-chain blockchain network",
+  "main": "app/app.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jessie-anderson/audit-chain.git"
+  },
+  "author": "Jessie Anderson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jessie-anderson/audit-chain/issues"
+  },
+  "homepage": "https://github.com/jessie-anderson/audit-chain#readme",
+  "dependencies": {
+    "electron": "^1.8.3",
+    "babel-cli": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3",
+    "nodemon": "^1.11.0"
+  }
+}

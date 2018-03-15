@@ -315,7 +315,7 @@ CLI_DELAY=3
 # channel name defaults to "mychannel"
 CHANNEL_NAME="mychannel"
 # use this as the default docker-compose yaml definition
-COMPOSE_FILE=docker-compose-cli.yaml
+COMPOSE_FILE=docker-compose-e2e.yaml
 #
 COMPOSE_FILE_COUCH=docker-compose-couch.yaml
 

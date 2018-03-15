@@ -1,0 +1,22 @@
+{
+  "peer0": {
+    "containerName": "peer0.org1.example.com",
+    "port": 7051,
+    "pemFilePath": "/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem"
+  },
+  "peer1": {
+    "containerName": "peer1.org1.example.com",
+    "port": 8051,
+    "pemFilePath": "/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem"
+  },
+  "peer2": {
+    "containerName": "peer0.org2.example.com",
+    "port": 9051,
+    "pemFilePath": "/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem"
+  },
+  "peer3": {
+    "containerName": "peer1.org2.example.com",
+    "port": 10051,
+    "pemFilePath": "/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem"
+  }
+}
