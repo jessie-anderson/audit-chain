@@ -1,6 +1,6 @@
 import moment from 'moment'
 import jwt from 'jsonwebtoken'
-import { updateUsername, updatePassword, createUser } from './user'
+import { updateUsername, updatePassword, createUser, isUserAdmin } from './user'
 
 export function register(req, res) {
   if (req.registerError) {
@@ -61,7 +61,22 @@ export function login(req, res) {
   const token = jwt.sign({
     username: req.user.username,
     fabricEnrollmentId: req.user.fabricEnrollmentId,
+    _id: req.user._id,
     exp: expires,
   }, process.env.JWT_SECRET)
   res.json({ user, token })
+}
+
+export function restrictToAdmins(req, res, next) {
+  isUserAdmin(req.user._id)
+  .then((isAdmin) => {
+    if (isAdmin) {
+      next()
+    } else {
+      res.status(401).send('Unauthorized')
+    }
+  })
+  .catch((err) => {
+    res.status(500).send(err)
+  })
 }

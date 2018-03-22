@@ -35,3 +35,13 @@ export function updatePassword({ user, newPassword }) {
     return u.setPassword(newPassword)
   })
 }
+
+export function isUserAdmin(userId) {
+  return User.findById(userId)
+  .then((user) => {
+    return Promise.resolve(user && user.role === 'admin')
+  })
+  .catch((error) => {
+    return Promise.reject(error)
+  })
+}

@@ -13,12 +13,15 @@ import authRouter from './auth-router'
 import adminRouter from './admin-router'
 import enrollAdmin from './fabric-api/enroll-admin'
 import User from './models/user'
+import { restrictToAdmins } from './db-helper/api'
+import createDefaultAdmin from './db-helper/create-admin-user'
 
 // configure environment variables
 dotenv.config()
 
 // enroll the boostrap fabric admin user, if needed
 enrollAdmin()
+createDefaultAdmin()
 
 const app = express()
 
@@ -44,6 +47,6 @@ app.use('/api', apiRouter)
 
 // other routes
 app.use('/auth', authRouter)
-app.use('/admin', adminRouter)
+app.use('/admin', expressJWT({ secret: process.env.JWT_SECRET }), restrictToAdmins, adminRouter)
 
 app.listen(4001)

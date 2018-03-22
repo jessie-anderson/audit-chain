@@ -11,6 +11,4 @@ authRouter.route('/enroll')
 authRouter.route('/login')
   .post(passport.authenticate('local', { session: false }), login)
 
-authRouter.route('/logout')
-
 export default authRouter
