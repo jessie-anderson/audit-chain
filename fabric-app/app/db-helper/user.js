@@ -34,12 +34,4 @@ export function updatePassword({ user, newPassword }) {
   .then((u) => {
     return u.setPassword(newPassword)
   })
-  .then((r) => {
-    console.log(r)
-    return Promise.resolve()
-  })
-  .catch((err) => {
-    console.log(err)
-    return Promise.reject(err)
-  })
 }

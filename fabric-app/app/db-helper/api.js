@@ -1,3 +1,5 @@
+import moment from 'moment'
+import jwt from 'jsonwebtoken'
 import { updateUsername, updatePassword, createUser } from './user'
 
 export function register(req, res) {
@@ -42,4 +44,24 @@ export function enroll(req, res) {
     console.log(err)
     res.status(500).send(err)
   })
+}
+
+export function login(req, res) {
+  delete req.user.salt
+  delete req.user.hash
+  console.log(req.user)
+  const user = {
+    _id: req.user._id,
+    username: req.user.username,
+    firstName: req.user.firstName,
+    lastName: req.user.lastName,
+    role: req.user.role,
+  }
+  const expires = moment().add(1, 'days').valueOf()
+  const token = jwt.sign({
+    username: req.user.username,
+    fabricEnrollmentId: req.user.fabricEnrollmentId,
+    exp: expires,
+  }, process.env.JWT_SECRET)
+  res.json({ user, token })
 }

@@ -17,6 +17,7 @@ const fields = new Set([
 ])
 
 export function recordUpdate(req, res) {
+  console.log(req.user)
   const keyArgs = Object.keys(req.body).filter((k) => {
     return fields.has(k)
   })
@@ -30,7 +31,7 @@ export function recordUpdate(req, res) {
     args,
   }
 
-  transaction(request, req.user.username, req.params.peerName, (err, result) => {
+  transaction(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
     handleResult(err, result, res)
   })
 }
@@ -42,7 +43,7 @@ export function historyForRecord(req, res) {
     args: [req.params.recordid],
   }
 
-  query(request, req.user.username, req.params.peerName, (err, result) => {
+  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
     handleResult(err, result, res)
   })
 }
@@ -54,7 +55,7 @@ export function getQueryCreator(req, res) {
     args: [],
   }
 
-  query(request, req.user.username, req.params.peerName, (err, result) => {
+  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
     handleResult(err, result, res)
   })
 }
@@ -82,7 +83,7 @@ export function filterQuery(req, res) {
     ],
   }
 
-  query(request, req.user.username, req.params.peerName, (err, result) => {
+  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
     let results
     if (result) {
       results = JSON.parse(result)
