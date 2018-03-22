@@ -9,8 +9,6 @@ export function createUser({ username, password, npi, firstName, lastName, role 
     lastName,
     role,
     fabricEnrollmentId: username,
-    updatedPassword: false,
-    updatedUsername: false,
   })
 
   return User.register(newUser, password).then((user) => {
@@ -21,19 +19,13 @@ export function createUser({ username, password, npi, firstName, lastName, role 
   })
 }
 
-export function updateUsername({ user, newUsername }) {
+export function updateUsername({ fabricEnrollmentId, newUsername }) {
   return User.findOneAndUpdate({
-    _id: user._id,
+    fabricEnrollmentId,
   }, {
     username: newUsername,
   }, {
     new: true,
-  })
-  .then((newUser) => {
-    return Promise.resolve(newUser)
-  })
-  .catch((err) => {
-    return Promise.reject(err)
   })
 }
 
@@ -42,7 +34,12 @@ export function updatePassword({ user, newPassword }) {
   .then((u) => {
     return u.setPassword(newPassword)
   })
+  .then((r) => {
+    console.log(r)
+    return Promise.resolve()
+  })
   .catch((err) => {
+    console.log(err)
     return Promise.reject(err)
   })
 }

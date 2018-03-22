@@ -21,13 +21,15 @@ export default function enrollUser(req, res, next) {
       // be sure to change the http to https when the CA is running TLS enabled
     fabricCAClient = new FabricCAClient('https://localhost:7054', null, '', cryptoSuite)
     return fabricCAClient.enroll({
-      enrollmentID: req.body.username,
-      enrollmentSecret: req.body.password,
+      enrollmentID: req.body.fabricEnrollmentId,
+      enrollmentSecret: req.body.fabricEnrollmentSecret,
     })
   })
   .then((enrollment) => {
+    console.log('enrollment:')
+    console.log(enrollment)
     return fabricClient.createUser(
-      { username: req.body.username,
+      { username: req.body.fabricEnrollmentId,
         mspid: 'Org1MSP',
         cryptoContent: {
           privateKeyPEM: enrollment.key.toBytes(),
@@ -39,6 +41,7 @@ export default function enrollUser(req, res, next) {
     next()
   })
   .catch((err) => {
+    console.log(`fabric error: ${err}`)
     req.enrollError = err
     next()
   })

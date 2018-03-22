@@ -4,7 +4,7 @@ import enrollUser from './fabric-api/enroll-user'
 
 const authRouter = Router()
 
-authRouter.route('/register')
+authRouter.route('/enroll')
   .post(enrollUser, enroll)
 
 authRouter.route('/login')
