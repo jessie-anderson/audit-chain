@@ -11,7 +11,7 @@ import FabricClient from 'fabric-client'
 import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
 
-export default function enrollAdmin(req, res) {
+export default function enrollAdmin() {
   const fabricClient = new FabricClient()
   let fabricCAClient = null
   let adminUser = null
@@ -38,7 +38,7 @@ export default function enrollAdmin(req, res) {
     fabricCAClient = new FabricCAClient('https://localhost:7054', tlsOptions, 'ca-org1', cryptoSuite)
 
       // first check to see if the admin is already enrolled
-    return fabricClient.getUserContext(req.body.username, true)
+    return fabricClient.getUserContext(process.env.ADMIN_USERNAME, true)
   })
   .then((userFromStore) => {
     if (userFromStore && userFromStore.isEnrolled()) {
@@ -48,14 +48,14 @@ export default function enrollAdmin(req, res) {
     } else {
           // need to enroll it with CA server
       return fabricCAClient.enroll({
-        enrollmentID: req.body.username,
-        enrollmentSecret: req.body.password,
+        enrollmentID: process.env.ADMIN_USERNAME,
+        enrollmentSecret: process.env.ADMIN_PASSWORD,
       })
       .then((enrollment) => {
         console.log(enrollment.certificate)
         console.log('Successfully enrolled admin user "admin"')
         return fabricClient.createUser(
-          { username: req.body.username,
+          { username: process.env.ADMIN_USERNAME,
             mspid: 'Org1MSP',
             cryptoContent: {
               privateKeyPEM: enrollment.key.toBytes(),
@@ -68,7 +68,6 @@ export default function enrollAdmin(req, res) {
         return fabricClient.setUserContext(adminUser)
       })
       .catch((err) => {
-        res.json({ error: `${err}` })
         console.error(`Failed to enroll and persist admin. Error: ${err.stack}` ? err.stack : err)
         throw new Error('Failed to enroll admin')
       })
@@ -76,10 +75,8 @@ export default function enrollAdmin(req, res) {
   })
   .then(() => {
     console.log(`Assigned the admin user to the fabric client ::${adminUser.toString()}`)
-    res.json({ message: 'success' })
   })
   .catch((err) => {
-    res.json({ error: `${err}` })
     console.error(`Failed to enroll admin: ${err}`)
   })
 }

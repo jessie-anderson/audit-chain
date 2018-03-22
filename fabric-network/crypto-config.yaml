@@ -68,8 +68,8 @@ PeerOrgs:
     # ---------------------------------------------------------------------------
     # Count: The number of user accounts _in addition_ to Admin
     # ---------------------------------------------------------------------------
-    Users:
-      Count: 1
+    # Users:
+    #   Count: 1
   # ---------------------------------------------------------------------------
   # Org2: See "Org1" for full specification
   # ---------------------------------------------------------------------------
@@ -77,5 +77,5 @@ PeerOrgs:
     Domain: org2.example.com
     Template:
       Count: 2
-    Users:
-      Count: 1
+    # Users:
+    #   Count: 1

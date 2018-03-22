@@ -10,15 +10,12 @@
 import FabricClient from 'fabric-client'
 import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
-import jwt from 'jsonwebtoken'
-import moment from 'moment'
 
-export default function registerUser(req, res) {
+export default function registerUser(req, res, next) {
   //
   const fabricClient = new FabricClient()
   let fabricCAClient = null
   let adminUser = null
-  let memberUser = null
   const storePath = path.join(__dirname, 'hfc-key-store')
   console.log(` Store path:${storePath}`)
 
@@ -38,9 +35,12 @@ export default function registerUser(req, res) {
     fabricCAClient = new FabricCAClient('https://localhost:7054', null, '', cryptoSuite)
 
       // first check to see if the admin is already enrolled
-    return fabricClient.getUserContext('admin', true)
+    return fabricClient.getUserContext(process.env.ADMIN_USERNAME, true)
   })
   .then((userFromStore) => {
+    console.log('================================')
+    console.log(userFromStore)
+    console.log('================================')
     if (userFromStore && userFromStore.isEnrolled()) {
       console.log('Successfully loaded admin from persistence')
       adminUser = userFromStore
@@ -52,45 +52,15 @@ export default function registerUser(req, res) {
       // first need to register the user with the CA server
     return fabricCAClient.register({
       enrollmentID: req.body.username,
-      enrollmentSecret: req.body.password,
-      affiliation: 'org2.department1',
-      role: 'client',
+      affiliation: 'org1.department1',
+      role: 'user',
     }, adminUser)
   })
-  .then(() => {
+  .then((enrollmentSecret) => {
       // next we need to enroll the user with CA server
-    console.log(`Successfully registered req.body.username - secret:${req.body.password}`)
-
-    return fabricCAClient.enroll({
-      enrollmentID: req.body.username,
-      enrollmentSecret: req.body.password,
-    })
-  })
-  .then((enrollment) => {
-    console.log(enrollment.certificate)
-    console.log(`Successfully enrolled member user ${req.body.username}`)
-    console.log(enrollment)
-    return fabricClient.createUser(
-      { username: req.body.username,
-        mspid: 'Org1MSP',
-        cryptoContent: {
-          privateKeyPEM: enrollment.key.toBytes(),
-          signedCertPEM: enrollment.certificate,
-        },
-      })
-  })
-  .then((user) => {
-    memberUser = user
-
-    return fabricClient.setUserContext(memberUser)
-  })
-  .then(() => {
-    console.log(`${req.body.username} was successfully registered and enrolled and is ready to interact with the fabric network`)
-    const token = jwt.sign({
-      username: req.body.username,
-      exp: moment().add(1, 'days').valueOf(),
-    }, 'mysecret')
-    res.json(token)
+    console.log(`Successfully registered ${req.body.username} - secret:${enrollmentSecret}`)
+    req.enrollmentSecret = enrollmentSecret
+    next()
   })
   .catch((err) => {
     console.error(`Failed to register: ${err}`)
@@ -98,6 +68,7 @@ export default function registerUser(req, res) {
       console.error(`${'Authorization failures may be caused by having admin credentials from a previous CA instance.\n' +
       'Try again after deleting the contents of the store directory '}${storePath}`)
     }
-    res.json({ error: `${err}` })
+    req.registerError = err
+    next()
   })
 }

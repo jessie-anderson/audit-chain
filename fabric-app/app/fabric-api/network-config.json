@@ -18,5 +18,17 @@
     "containerName": "peer1.org2.example.com",
     "port": 10051,
     "pemFilePath": "/Users/Jessie/audit-chain/fabric-network/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem"
+  },
+  "orderer": {
+    "containerName": "orderer.example.com",
+    "port": 7050
+  },
+  "ca1": {
+    "containerName": "ca_peerOrg1",
+    "port": 7054
+  },
+  "ca2": {
+    "containerName": "ca_peerOrg2",
+    "port": 8054
   }
 }
