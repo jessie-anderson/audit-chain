@@ -1,15 +1,28 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import url from 'url'
+import pug from 'electron-pug'
+import dotenv from 'dotenv'
+import reload from 'electron-reload'
+
+// set up environment variables
+dotenv.config()
+
+reload('__dirname')
+
+const locals = {}
+pug({ pretty: true }, locals)
+
+let win
 
 function createWindow() {
-  let win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 800,
   })
 
   win.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(__dirname, 'login/login.jade'),
     protocol: 'file:',
     slashes: true,
   }))
