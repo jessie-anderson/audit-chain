@@ -1,8 +1,9 @@
 import { remote } from 'electron'
 import url from 'url'
 import path from 'path'
+import $ from 'jquery'
 
-document.getElementById('signout-button').addEventListener('click', () => {
+$('#signout-button').click(() => {
   localStorage.removeItem('token')
   const win = remote.getCurrentWindow()
   win.loadURL(url.format({

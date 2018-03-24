@@ -1,11 +1,12 @@
 import { remote } from 'electron'
 import url from 'url'
 import path from 'path'
+import $ from 'jquery'
 import login from '../api/login'
 
-document.getElementById('signin-button').addEventListener('click', () => {
-  const username = document.getElementById('username').value
-  const password = document.getElementById('password').value
+$('#signin-button').click(() => {
+  const username = $('#username').val()
+  const password = $('#password').val()
   login(username, password)
   .then(() => {
     const win = remote.getCurrentWindow()
