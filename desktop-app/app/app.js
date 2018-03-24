@@ -19,10 +19,11 @@ function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 800,
+    backgroundColor: '#eeeeee',
   })
 
   win.loadURL(url.format({
-    pathname: path.join(__dirname, 'login/login.jade'),
+    pathname: path.join(__dirname, 'index.jade'),
     protocol: 'file:',
     slashes: true,
   }))
