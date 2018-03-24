@@ -5,6 +5,7 @@ import $ from 'jquery'
 
 $('#signout-button').click(() => {
   localStorage.removeItem('token')
+  localStorage.removeItem('user')
   const win = remote.getCurrentWindow()
   win.loadURL(url.format({
     pathname: path.join(__dirname, '../index.jade'),
