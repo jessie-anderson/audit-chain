@@ -30,7 +30,9 @@ $('#submit-registration').click(() => {
 
   registerUser({ fname, lname, npi, userId, role })
   .then((result) => {
-    console.log(result)
+    localStorage.setItem('temp-username', result.username)
+    localStorage.setItem('temp-pwd', result.tempPassword)
+    loadPage(path.join(__dirname, 'registration-success.jade'))
   })
   .catch((errorResponse) => {
     console.log('error')

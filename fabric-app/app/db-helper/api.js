@@ -15,7 +15,10 @@ export function register(req, res) {
       role: req.body.role,
     })
     .then((user) => {
-      res.json(user)
+      res.json({
+        username: req.body.username,
+        tempPassword: req.enrollmentSecret,
+      })
     })
     .catch((err) => {
       res.status(500).send(err)
