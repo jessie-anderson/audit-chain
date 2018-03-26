@@ -1,9 +1,9 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
-import url from 'url'
 import pug from 'electron-pug'
 import dotenv from 'dotenv'
 import reload from 'electron-reload'
+import { getURLFromPathname } from './lib/electron-helpers'
 
 // set up environment variables
 dotenv.config()
@@ -22,11 +22,7 @@ function createWindow() {
     backgroundColor: '#eeeeee',
   })
 
-  win.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.jade'),
-    protocol: 'file:',
-    slashes: true,
-  }))
+  win.loadURL(getURLFromPathname(path.join(__dirname, 'index.jade')))
 
   win.on('closed', () => {
     win = null

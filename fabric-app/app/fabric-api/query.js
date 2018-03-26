@@ -25,9 +25,6 @@ export default function query(request, username, peerName, fn) {
     return fabricClient.getUserContext(username, true)
   })
   .then((user) => {
-    console.log('================================')
-    console.log(user)
-    console.log('================================')
     if (!user || !user.isEnrolled()) {
       throw new Error(`Failed to get ${username}`)
     }

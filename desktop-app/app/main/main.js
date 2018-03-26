@@ -1,15 +1,17 @@
-import { remote } from 'electron'
-import url from 'url'
 import path from 'path'
 import $ from 'jquery'
+import { loadPage } from '../lib/electron-helpers'
 
 $('#signout-button').click(() => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
-  const win = remote.getCurrentWindow()
-  win.loadURL(url.format({
-    pathname: path.join(__dirname, '../index.jade'),
-    protocol: 'file:',
-    slashes: true,
-  }))
+  loadPage(path.join(__dirname, '../index.jade'))
+})
+
+$('#register-user').click(() => {
+  loadPage(path.join(__dirname, '../register/register.jade'))
+})
+
+$('#view-logs').click(() => {
+  loadPage(path.join(__dirname, '../logs/logs.jade'))
 })

@@ -146,9 +146,6 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-    fmt.Println("================================================================")
-    fmt.Println(item)
-    fmt.Println("================================================================")
 		buffer.WriteString(string(item.Value))
 		if (historyIter.HasNext()) {
 			buffer.WriteString(",")

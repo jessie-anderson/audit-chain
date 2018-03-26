@@ -1,0 +1,29 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+  body
+    .registration
+      .fname
+        label(htmlFor='fname') First Name
+        input(type='text' id='fname')
+      .lname
+        label(htmlFor='lname') Last Name
+        input(type='text' id='lname')
+      .user-id
+        label(htmlFor='user-id') Unique User Identification
+        input(type='text' id='user-id')
+      .npi
+        label(htmlFor='npi') National Provider Identifier
+        input(type='text' id='npi')
+      .role Role
+        input(type='radio' id='admin-role' name='role' value='admin')
+        label(htmlFor='admin-role') Admin
+        input(type='radio' id='doctor-role' name='role' value='doctor')
+        label(htmlFor='doctor-role') Doctor
+        input(type='radio' id='patient-role' name='role' value='patient')
+        label(htmlFor='patient-role') Patient
+      button(id='submit-registration') Register User
+    button(id='return') Return to main page
+    script(type='text/javascript' src='register.js')

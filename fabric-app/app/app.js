@@ -42,8 +42,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 // api routes protected by jwt
-app.use('/api', expressJWT({ secret: process.env.JWT_SECRET }))
-app.use('/api', apiRouter)
+app.use('/api', expressJWT({ secret: process.env.JWT_SECRET }), apiRouter)
 
 // other routes
 app.use('/auth', authRouter)

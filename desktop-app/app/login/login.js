@@ -1,8 +1,8 @@
 import { remote } from 'electron'
-import url from 'url'
 import path from 'path'
 import $ from 'jquery'
 import login from '../api/login'
+import { getURLFromPathname } from '../lib/electron-helpers'
 
 $('#signin-button').click(() => {
   const username = $('#username').val()
@@ -12,11 +12,7 @@ $('#signin-button').click(() => {
     localStorage.setItem('user', data.user)
     localStorage.setItem('token', data.token)
     const win = remote.getCurrentWindow()
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, '../index.jade'),
-      protocol: 'file:',
-      slashes: true,
-    }))
+    win.loadURL(getURLFromPathname(path.join(__dirname, '../index.jade')))
   })
   .catch((errResponse) => {
     $('#error-message').text(`Error: ${errResponse.statusText}`)

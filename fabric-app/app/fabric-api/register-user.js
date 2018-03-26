@@ -38,9 +38,6 @@ export default function registerUser(req, res, next) {
     return fabricClient.getUserContext(process.env.ADMIN_USERNAME, true)
   })
   .then((userFromStore) => {
-    console.log('================================')
-    console.log(userFromStore)
-    console.log('================================')
     if (userFromStore && userFromStore.isEnrolled()) {
       console.log('Successfully loaded admin from persistence')
       adminUser = userFromStore
@@ -50,6 +47,7 @@ export default function registerUser(req, res, next) {
 
       // at this point we should have the admin user
       // first need to register the user with the CA server
+    console.log(req.body)
     return fabricCAClient.register({
       enrollmentID: req.body.username,
       affiliation: 'org1.department1',
