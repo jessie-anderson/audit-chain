@@ -9,7 +9,7 @@ $('#signin-button').click(() => {
   const password = $('#password').val()
   login(username, password)
   .then((data) => {
-    localStorage.setItem('user', data.user)
+    localStorage.setItem('user', JSON.stringify(data.user))
     localStorage.setItem('token', data.token)
     const win = remote.getCurrentWindow()
     win.loadURL(getURLFromPathname(path.join(__dirname, '../index.jade')))

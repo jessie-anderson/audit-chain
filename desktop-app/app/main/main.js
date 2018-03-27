@@ -15,3 +15,7 @@ $('#register-user').click(() => {
 $('#view-logs').click(() => {
   loadPage(path.join(__dirname, '../logs/logs.jade'))
 })
+
+if (JSON.parse(localStorage.getItem('user')).role !== 'admin') {
+  $('#register-user').hide()
+}
