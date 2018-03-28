@@ -9,6 +9,7 @@ export function createUser({ username, password, npi, firstName, lastName, role 
     lastName,
     role,
     fabricEnrollmentId: username,
+    hasChangedPassword: false,
   })
 
   return User.register(newUser, password).then((user) => {
@@ -33,6 +34,10 @@ export function updatePassword({ user, newPassword }) {
   return User.findById(user._id)
   .then((u) => {
     return u.setPassword(newPassword)
+  })
+  .then((u) => {
+    u.hasChangedPassword = true
+    return u.save()
   })
 }
 

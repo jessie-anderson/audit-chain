@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+  body
+    .title
+      span Set Credentials
+    .username
+      label(htmlFor='username-1') Username
+      input(type='text' id='username-1')
+      label(htmlFor='username-2') Confirm Username
+      input(type='text' id='username-2')
+      span(id='username-error')
+    .password
+      label(htmlFor='password-1') Password
+      input(type='password' id='password-1')
+      label(htmlFor='password-2') Confirm Password
+      input(type='password' id='password-2')
+      span(id='password-error')
+    span(id='request-error')
+    button(id='enroll-button') Enroll
+    script(type='text/javascript' src='enroll.js')

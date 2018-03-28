@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { recordUpdate, historyForRecord, getQueryCreator, filterQuery } from './fabric-api/api'
+import { enroll } from './db-helper/api'
 
 const apiRouter = Router()
 
@@ -12,5 +13,8 @@ apiRouter.route('/creator/:peerName')
 
 apiRouter.route('/logs/:peerName')
 .get(filterQuery)
+
+apiRouter.route('/enroll')
+.post(enroll)
 
 export default apiRouter

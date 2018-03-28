@@ -8,6 +8,7 @@ const UserSchema = new Schema({
   lastName: { type: String, required: true },
   role: { type: String, required: true, enum: ['patient', 'doctor', 'admin'] },
   fabricEnrollmentId: { type: String, required: true },
+  hasChangedPassword: { type: Boolean, required: true, default: false },
 })
 
 UserSchema.plugin(passportLocalMongoose, { usernameField: 'username' })

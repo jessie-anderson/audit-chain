@@ -40,8 +40,15 @@ export function enroll(req, res) {
       newPassword: req.body.password,
     })
   })
-  .then((r) => {
-    res.json(r)
+  .then((updatedUser) => {
+    const expires = moment().add(1, 'days').valueOf()
+    const token = jwt.sign({
+      username: updatedUser.username,
+      fabricEnrollmentId: updatedUser.fabricEnrollmentId,
+      _id: updatedUser._id,
+      exp: expires,
+    }, process.env.JWT_SECRET)
+    res.json({ user: updatedUser, token })
   })
   .catch((err) => {
     console.log(err)
@@ -59,6 +66,7 @@ export function login(req, res) {
     firstName: req.user.firstName,
     lastName: req.user.lastName,
     role: req.user.role,
+    hasChangedPassword: req.user.hasChangedPassword,
   }
   const expires = moment().add(1, 'days').valueOf()
   const token = jwt.sign({

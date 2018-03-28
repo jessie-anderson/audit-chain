@@ -6,7 +6,6 @@ import registerUser from '../api/register-user'
 let role = null
 
 function radioClick() {
-  console.log(this.value)
   if (this.checked) {
     role = this.value
   }
