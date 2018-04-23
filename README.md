@@ -6,13 +6,7 @@
 Install: https://docs.docker.com/install/
 
 ### Fabric docker images
-`docker pull fabric-peer`
-
-`docker pull fabric-ca`
-
-`docker pull fabric-orderer`
-
-`docker pull fabric-couchdb`
+Execute the command `curl -sSL https://goo.gl/6wtTN5 | bash -s 1.1.0` from any directory. (This will create a directory `fabric-samples` in the directory you run the command from - delete this directory, as you don't need it.)
 
 ### Go
 Install: https://golang.org/dl/

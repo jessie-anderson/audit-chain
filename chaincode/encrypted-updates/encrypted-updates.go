@@ -1,11 +1,11 @@
 package main
 
 import (
-  "bytes"
+	"bytes"
 	"encoding/json"
-  "fmt"
+	"fmt"
 	"strings"
-  "errors"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	sc "github.com/hyperledger/fabric/protos/peer"
 )
@@ -13,7 +13,9 @@ import (
 type SmartContract struct {
 }
 
-/** EventDetails
+/** RecordEvent
+  * information keyed by record ID
+  *
 	* ActionType: edit, delete, create, view
 	* UserID: id of user who performed action
 	* PatientID: id of patient whose record is concerned
@@ -26,42 +28,70 @@ type SmartContract struct {
 	* OriginalAuthorNPI: NPI of user who authored change (in case of make-me-the-author functionality)
 	* OrganizationNPI: NPI of organization that user belongs to
 **/
-
-type EventDetails struct {
-	ActionType string `json:"actionType"`
-  UserID string `json:"userId"`
-	PatientID string `json:"patientId"`
-	DataType string `json:"dataType"`
-	OriginalAuthorID string `json:"originalAuthorId"`
-	DataField string `json:"dataField"`
-	Data string `json:"data"`
-	EntryMethod string `json:"entryMethod"`
-	UserNPI string `json:"userNpi"`
+type RecordEvent struct {
+	ActionType        string `json:"actionType"`
+	UserID            string `json:"userId"`
+	PatientID         string `json:"patientId"`
+	DataType          string `json:"dataType"`
+	OriginalAuthorID  string `json:"originalAuthorId"`
+	DataField         string `json:"dataField"`
+	Data              string `json:"data"`
+	EntryMethod       string `json:"entryMethod"`
+	UserNPI           string `json:"userNpi"`
 	OriginalAuthorNPI string `json:"originalAuthorNpi"`
-	OrganizationNPI string `json:"organizationNpi"`
+	OrganizationNPI   string `json:"organizationNpi"`
 }
 
-type Entry struct {
-  Update EventDetails `json:"update"`
-  // RecordHash [32]byte `json:"recordHash"`
+/** PatientEvent
+  * information keyed by patient ID
+**/
+type PatientEvent struct {
+	ActionType        string `json:"actionType"`
+	UserID            string `json:"userId"`
+	RecordID          string `json:"recordId"`
+	DataType          string `json:"dataType"`
+	OriginalAuthorID  string `json:"originalAuthorId"`
+	DataField         string `json:"dataField"`
+	Data              string `json:"data"`
+	EntryMethod       string `json:"entryMethod"`
+	UserNPI           string `json:"userNpi"`
+	OriginalAuthorNPI string `json:"originalAuthorNpi"`
+	OrganizationNPI   string `json:"organizationNpi"`
+}
+
+/** UserEvent
+  * information keyed by user ID
+**/
+type UserEvent struct {
+	ActionType        string `json:"actionType"`
+	PatientID         string `json:"patientId"`
+	RecordID          string `json:"recordId"`
+	DataType          string `json:"dataType"`
+	OriginalAuthorID  string `json:"originalAuthorId"`
+	DataField         string `json:"dataField"`
+	Data              string `json:"data"`
+	EntryMethod       string `json:"entryMethod"`
+	UserNPI           string `json:"userNpi"`
+	OriginalAuthorNPI string `json:"originalAuthorNpi"`
+	OrganizationNPI   string `json:"organizationNpi"`
 }
 
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
-  return shim.Success(nil)
+	return shim.Success(nil)
 }
 
 func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response {
-  fn, args := APIstub.GetFunctionAndParameters()
+	fn, args := APIstub.GetFunctionAndParameters()
 
 	if fn == "recordUpdate" {
 		return s.RecordUpdate(APIstub, args)
 	} else if fn == "getRecordHistory" {
 		return s.GetRecordHistory(APIstub, args)
 	} else if fn == "getCreator" {
-    return s.GetCreator(APIstub)
-  } else if fn == "getLogQueryResult" {
-    return s.GetLogQueryResult(APIstub, args)
-  }
+		return s.GetCreator(APIstub)
+	} else if fn == "getLogQueryResult" {
+		return s.GetLogQueryResult(APIstub, args)
+	}
 
 	return shim.Error(fmt.Sprintf("Unrecognized function %s", fn))
 }
@@ -79,49 +109,104 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("Expecting 12 arguments; got %d", len(args)))
 	}
 
-	eventDetails, detailsErr := s.CreateEventDetails(args[1:])
-	if (detailsErr != nil) {
-		return shim.Error(fmt.Sprintf("%+v", detailsErr))
+	recordEvent, recordErr := s.CreateRecordEvent(args[1:])
+	if recordErr != nil {
+		return shim.Error(fmt.Sprintf("%+v", recordErr))
+	}
+	recordEventAsBytes, recordBytesErr := json.Marshal(recordEvent)
+	if recordBytesErr != nil {
+		return shim.Error(fmt.Sprintf("Error marshaling RecordEvent: %+v", recordBytesErr))
 	}
 
-	event := Entry{Update: eventDetails}
-	eventAsBytes, eventMarshalErr := json.Marshal(event)
-	if eventMarshalErr != nil {
-		return shim.Error(fmt.Sprintf("Error marshaling event: %+v", eventMarshalErr))
+	patientEvent, patientErr := s.CreatePatientEvent(append(args[0:1], args[2:]...))
+	if patientErr != nil {
+		return shim.Error(fmt.Sprintf("%+v", patientErr))
 	}
-	APIstub.PutState(args[0], eventAsBytes)
+	patientEventAsBytes, patientBytesErr := json.Marshal(patientEvent)
+	if patientBytesErr != nil {
+		return shim.Error(fmt.Sprintf("Error marshaling PatientEvent: %+v", patientBytesErr))
+	}
+
+	userEvent, userErr := s.CreateUserEvent(append(args[0:2], args[3:]...))
+	if userErr != nil {
+		return shim.Error(fmt.Sprintf("%+v", userErr))
+	}
+	userEventAsBytes, userBytesErr := json.Marshal(userEvent)
+	if userBytesErr != nil {
+		return shim.Error(fmt.Sprintf("Error marshaling UserEvent: %+v", userBytesErr))
+	}
+
+	APIstub.PutState(fmt.Sprintf("recordId:%s", args[0]), recordEventAsBytes)
+	APIstub.PutState(fmt.Sprintf("patientId:%s", args[1]), patientEventAsBytes)
+	APIstub.PutState(fmt.Sprintf("userId:%s", args[2]), userEventAsBytes)
+
 	return shim.Success([]byte("successfully updated ledger"))
 }
 
-func (s *SmartContract) CreateEventDetails(args []string) (EventDetails, error) {
+func (s *SmartContract) GetByteArrayFromArgs(args []string) ([]byte, error) {
 	details := map[string]string{}
 	for i := 0; i < len(args); i++ {
 		pieces := strings.Split(args[i], ":")
 		if len(pieces) != 2 {
-			return EventDetails{}, errors.New(fmt.Sprintf("Incorrectly formatted argument %s", args[i]))
+			return []byte{}, fmt.Errorf("Incorrectly formatted argument %s", args[i])
 		}
 		if s.IsValidField(pieces[0]) {
 			details[pieces[0]] = pieces[1]
 		} else {
-			return EventDetails{}, errors.New(fmt.Sprintf("Invalid field %s", pieces[0]))
+			return []byte{}, fmt.Errorf("invalid field %s", pieces[0])
 		}
 	}
+
 	marshaled, marshalErr := json.Marshal(details)
 	if marshalErr != nil {
-		return EventDetails{}, errors.New(fmt.Sprintf("Error marshaling map: %+v", marshalErr))
+		return []byte{}, fmt.Errorf("Error marshalling map: %+v", marshalErr)
 	}
-	eventDetails := EventDetails{}
-	unmarshalErr := json.Unmarshal(marshaled, &eventDetails)
+	return marshaled, nil
+}
+
+func (s *SmartContract) CreateRecordEvent(args []string) (RecordEvent, error) {
+	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
+	if marshalErr != nil {
+		return RecordEvent{}, marshalErr
+	}
+	recordEvent := RecordEvent{}
+	unmarshalErr := json.Unmarshal(marshaled, &recordEvent)
 	if unmarshalErr != nil {
-		return eventDetails, errors.New(fmt.Sprintf("Error unmarshaling into EventDetails: %+v", unmarshalErr))
+		return recordEvent, fmt.Errorf("Error unmarshaling into RecordEvent: %+v", unmarshalErr)
 	}
-	return eventDetails, nil
+	return recordEvent, nil
+}
+
+func (s *SmartContract) CreatePatientEvent(args []string) (PatientEvent, error) {
+	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
+	if marshalErr != nil {
+		return PatientEvent{}, marshalErr
+	}
+	patientEvent := PatientEvent{}
+	unmarshalErr := json.Unmarshal(marshaled, &patientEvent)
+	if unmarshalErr != nil {
+		return patientEvent, fmt.Errorf("Error unmarshaling into PatientEvent: %+v", unmarshalErr)
+	}
+	return patientEvent, nil
+}
+
+func (s *SmartContract) CreateUserEvent(args []string) (UserEvent, error) {
+	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
+	if marshalErr != nil {
+		return UserEvent{}, marshalErr
+	}
+	userEvent := UserEvent{}
+	unmarshalErr := json.Unmarshal(marshaled, &userEvent)
+	if unmarshalErr != nil {
+		return userEvent, fmt.Errorf("Error unmarshaling into UserEvent: %+v", unmarshalErr)
+	}
+	return userEvent, nil
 }
 
 func (s *SmartContract) IsValidField(field string) bool {
 	switch field {
-		case
-		"actionType", "userId", "patientId", "dataType", "originalAuthorId",
+	case
+		"actionType", "userId", "patientId", "recordId", "dataType", "originalAuthorId",
 		"dataField", "data", "entryMethod", "userNpi", "originalAuthorNpi",
 		"organizationNpi":
 		return true
@@ -147,7 +232,7 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 			return shim.Error(err.Error())
 		}
 		buffer.WriteString(string(item.Value))
-		if (historyIter.HasNext()) {
+		if historyIter.HasNext() {
 			buffer.WriteString(",")
 		}
 	}
@@ -156,91 +241,91 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 }
 
 func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-  if len(args) != 4 {
-    return shim.Error(fmt.Sprintf("Expecting 4 arguments; got %d", len(args)))
-  }
-  patientIds := strings.Split(args[0], ",")
-  userIds := strings.Split(args[1], ",")
+	if len(args) != 4 {
+		return shim.Error(fmt.Sprintf("Expecting 4 arguments; got %d", len(args)))
+	}
+	patientIds := strings.Split(args[0], ",")
+	userIds := strings.Split(args[1], ",")
 
-  var queryString string
+	var queryString string
 
-  if (len(patientIds) < 1 || patientIds[0] == "") && (len(userIds) < 1 || userIds[0] == "") {
-    queryString = "{}"
-  } else {
-    var buffer bytes.Buffer
-    buffer.WriteString("{\"selector\": {\"update\":{")
-    if len(patientIds) > 0 && patientIds[0] != "" {
-      buffer.WriteString(s.ConstructQueryForField("patientId", patientIds))
-    }
-    if len(userIds) > 0 && userIds[0] != "" {
-      if len(patientIds) > 0 && patientIds[0] != "" {
-        buffer.WriteString(",")
-      }
-      buffer.WriteString(s.ConstructQueryForField("userId", userIds))
-    }
-    buffer.WriteString("}}}")
-    queryString = buffer.String()
-  }
+	if (len(patientIds) < 1 || patientIds[0] == "") && (len(userIds) < 1 || userIds[0] == "") {
+		queryString = "{}"
+	} else {
+		var buffer bytes.Buffer
+		buffer.WriteString("{\"selector\": {\"update\":{")
+		if len(patientIds) > 0 && patientIds[0] != "" {
+			buffer.WriteString(s.ConstructQueryForField("patientId", patientIds))
+		}
+		if len(userIds) > 0 && userIds[0] != "" {
+			if len(patientIds) > 0 && patientIds[0] != "" {
+				buffer.WriteString(",")
+			}
+			buffer.WriteString(s.ConstructQueryForField("userId", userIds))
+		}
+		buffer.WriteString("}}}")
+		queryString = buffer.String()
+	}
 
-  fmt.Println(queryString)
-  resultsIterator, queryErr := APIstub.GetQueryResult(queryString)
-  if queryErr != nil {
-    return shim.Error(queryErr.Error())
-  }
+	fmt.Println(queryString)
+	resultsIterator, queryErr := APIstub.GetQueryResult(queryString)
+	if queryErr != nil {
+		return shim.Error(queryErr.Error())
+	}
 
-  var keys []string
-  for resultsIterator.HasNext() {
-    res, err := resultsIterator.Next()
-    if err != nil {
-      return shim.Error(err.Error())
-    }
+	var keys []string
+	for resultsIterator.HasNext() {
+		res, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
 
-    keys = append(keys, res.Key)
-  }
+		keys = append(keys, res.Key)
+	}
 
-  var resultBuffer bytes.Buffer
-  resultBuffer.WriteString("[")
-  for i, key := range keys {
-    if i > 0 {
-      resultBuffer.WriteString(",")
-    }
-    historyIterator, historyErr := APIstub.GetHistoryForKey(key)
-    if historyErr != nil {
-      return shim.Error(historyErr.Error())
-    }
+	var resultBuffer bytes.Buffer
+	resultBuffer.WriteString("[")
+	for i, key := range keys {
+		if i > 0 {
+			resultBuffer.WriteString(",")
+		}
+		historyIterator, historyErr := APIstub.GetHistoryForKey(key)
+		if historyErr != nil {
+			return shim.Error(historyErr.Error())
+		}
 
-    for historyIterator.HasNext() {
-      item, itemErr := historyIterator.Next()
-      if itemErr != nil {
-        return shim.Error(itemErr.Error())
-      }
+		for historyIterator.HasNext() {
+			item, itemErr := historyIterator.Next()
+			if itemErr != nil {
+				return shim.Error(itemErr.Error())
+			}
 
-      resultBuffer.WriteString("{\"value\": ")
-      resultBuffer.WriteString(string(item.Value))
-      resultBuffer.WriteString(", \"time\": {")
-      resultBuffer.WriteString(fmt.Sprintf("\"seconds\": \"%d\",", item.Timestamp.GetSeconds()))
-      resultBuffer.WriteString(fmt.Sprintf("\"nanoseconds\": \"%d\"", item.Timestamp.GetNanos()))
-      resultBuffer.WriteString("}}")
-      if historyIterator.HasNext() {
-        resultBuffer.WriteString(",")
-      }
-    }
-  }
-  resultBuffer.WriteString("]")
-  return shim.Success(resultBuffer.Bytes())
+			resultBuffer.WriteString("{\"value\": ")
+			resultBuffer.WriteString(string(item.Value))
+			resultBuffer.WriteString(", \"time\": {")
+			resultBuffer.WriteString(fmt.Sprintf("\"seconds\": \"%d\",", item.Timestamp.GetSeconds()))
+			resultBuffer.WriteString(fmt.Sprintf("\"nanoseconds\": \"%d\"", item.Timestamp.GetNanos()))
+			resultBuffer.WriteString("}}")
+			if historyIterator.HasNext() {
+				resultBuffer.WriteString(",")
+			}
+		}
+	}
+	resultBuffer.WriteString("]")
+	return shim.Success(resultBuffer.Bytes())
 }
 
 func (s *SmartContract) ConstructQueryForField(fieldName string, possibleValues []string) string {
-  var buffer bytes.Buffer
-  buffer.WriteString(fmt.Sprintf("\"%s\": {\"$in\": [", fieldName))
-  for i, value := range possibleValues {
-    if i > 0 {
-      buffer.WriteString(",")
-    }
-    buffer.WriteString(fmt.Sprintf("\"%s\"",value))
-  }
-  buffer.WriteString("]}")
-  return buffer.String()
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("\"%s\": {\"$in\": [", fieldName))
+	for i, value := range possibleValues {
+		if i > 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(fmt.Sprintf("\"%s\"", value))
+	}
+	buffer.WriteString("]}")
+	return buffer.String()
 }
 
 func main() {
