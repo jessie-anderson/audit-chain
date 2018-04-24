@@ -4,8 +4,6 @@ import transaction from './transaction'
 
 const fields = new Set([
   'actionType',
-  'userId',
-  'patientId',
   'dataType',
   'originalAuthorId',
   'dataField',
@@ -22,7 +20,11 @@ export function recordUpdate(req, res) {
     return fields.has(k)
   })
   const args = formatArgs(req.body, keyArgs)
-  args.unshift(req.params.recordid)
+  args.unshift(
+    `recordId:${req.params.recordid}`,
+    `patientId:${req.params.patientid}`,
+    `userId:${req.params.userid}`,
+  )
   console.log(args)
 
   const request = {

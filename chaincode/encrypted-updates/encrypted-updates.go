@@ -136,9 +136,9 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("Error marshaling UserEvent: %+v", userBytesErr))
 	}
 
-	APIstub.PutState(fmt.Sprintf("recordId:%s", args[0]), recordEventAsBytes)
-	APIstub.PutState(fmt.Sprintf("patientId:%s", args[1]), patientEventAsBytes)
-	APIstub.PutState(fmt.Sprintf("userId:%s", args[2]), userEventAsBytes)
+	APIstub.PutState(args[0], recordEventAsBytes)
+	APIstub.PutState(args[1], patientEventAsBytes)
+	APIstub.PutState(args[2], userEventAsBytes)
 
 	return shim.Success([]byte("successfully updated ledger"))
 }
@@ -218,7 +218,7 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 	if len(args) != 1 {
 		return shim.Error(fmt.Sprintf("Expecting 1 argument; got %d", len(args)))
 	}
-	historyIter, historyErr := APIstub.GetHistoryForKey(args[0])
+	historyIter, historyErr := APIstub.GetHistoryForKey(fmt.Sprintf("recordId:%s", args[0]))
 	if historyErr != nil {
 		return shim.Error(historyErr.Error())
 	}
@@ -244,43 +244,23 @@ func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, a
 	if len(args) != 4 {
 		return shim.Error(fmt.Sprintf("Expecting 4 arguments; got %d", len(args)))
 	}
-	patientIds := strings.Split(args[0], ",")
-	userIds := strings.Split(args[1], ",")
+	recordIds := strings.Split(args[0], ",")
+	patientIds := strings.Split(args[1], ",")
+	userIds := strings.Split(args[2], ",")
 
-	var queryString string
+	nKeys := len(recordIds) + len(patientIds) + len(userIds)
+	keys := make([]string, nKeys)
 
-	if (len(patientIds) < 1 || patientIds[0] == "") && (len(userIds) < 1 || userIds[0] == "") {
-		queryString = "{}"
-	} else {
-		var buffer bytes.Buffer
-		buffer.WriteString("{\"selector\": {\"update\":{")
-		if len(patientIds) > 0 && patientIds[0] != "" {
-			buffer.WriteString(s.ConstructQueryForField("patientId", patientIds))
-		}
-		if len(userIds) > 0 && userIds[0] != "" {
-			if len(patientIds) > 0 && patientIds[0] != "" {
-				buffer.WriteString(",")
-			}
-			buffer.WriteString(s.ConstructQueryForField("userId", userIds))
-		}
-		buffer.WriteString("}}}")
-		queryString = buffer.String()
+	for i := 0; i < len(recordIds); i++ {
+		keys[i] = fmt.Sprintf("recordId:%s", recordIds[i])
 	}
 
-	fmt.Println(queryString)
-	resultsIterator, queryErr := APIstub.GetQueryResult(queryString)
-	if queryErr != nil {
-		return shim.Error(queryErr.Error())
+	for i := 0; i < len(patientIds); i++ {
+		keys[i+len(recordIds)] = fmt.Sprintf("patientId:%s", patientIds[i])
 	}
 
-	var keys []string
-	for resultsIterator.HasNext() {
-		res, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		keys = append(keys, res.Key)
+	for i := 0; i < len(userIds); i++ {
+		keys[i+len(recordIds)+len(patientIds)] = fmt.Sprintf("userId:%s", userIds[i])
 	}
 
 	var resultBuffer bytes.Buffer
@@ -313,19 +293,6 @@ func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, a
 	}
 	resultBuffer.WriteString("]")
 	return shim.Success(resultBuffer.Bytes())
-}
-
-func (s *SmartContract) ConstructQueryForField(fieldName string, possibleValues []string) string {
-	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("\"%s\": {\"$in\": [", fieldName))
-	for i, value := range possibleValues {
-		if i > 0 {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(fmt.Sprintf("\"%s\"", value))
-	}
-	buffer.WriteString("]}")
-	return buffer.String()
 }
 
 func main() {

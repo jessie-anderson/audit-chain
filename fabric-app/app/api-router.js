@@ -4,7 +4,7 @@ import { enroll } from './db-helper/api'
 
 const apiRouter = Router()
 
-apiRouter.route('/logs/:recordid/:peerName')
+apiRouter.route('/logs/:recordid/:patientid/:userid/:peerName')
 .post(recordUpdate)
 .get(historyForRecord)
 
