@@ -69,15 +69,17 @@ export function getQueryCreator(req, res) {
 * time range
 */
 export function filterQuery(req, res) {
-  const patientIds = req.query.patientIds
-  const userIds = req.query.userIds
+  const recordIds = req.query.recordIds ? formatIds(req.query.recordIds.split(',')) : req.query.recordIds
+  const patientIds = req.query.patientIds ? formatIds(req.query.patientIds.split(',')) : req.query.patientIds
+  const userIds = req.query.userIds ? formatIds(req.query.userIds.split(',')) : req.query.userIds
+  console.log(recordIds, patientIds, userIds)
   const startTime = req.query.startTime
   const endTime = req.query.endTime
-  console.log(req.query)
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getLogQueryResult',
     args: [
+      recordIds || '',
       patientIds || '',
       userIds || '',
       startTime || '',
@@ -109,6 +111,12 @@ function formatArgs(object, keyArgs) {
   return keyArgs.map((k) => {
     return `${k}:${object[k]}`
   })
+}
+
+function formatIds(args, prepend) {
+  return args.map((a) => {
+    return `${prepend}:${a}`
+  }).join(',')
 }
 
 function handleResult(err, result, res) {

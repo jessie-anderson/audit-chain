@@ -27,6 +27,7 @@ export function register(req, res) {
 }
 
 export function enroll(req, res) {
+  console.log(req.headers)
   if (req.enrollError) {
     res.status(500).send(req.enrollError)
   }

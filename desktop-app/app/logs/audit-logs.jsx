@@ -15,8 +15,8 @@ class AuditLogs extends React.Component {
   }
 
   componentWillMount() {
-    const { patientIds, userIds, startTime, endTime } = this.state
-    getLogs(patientIds, userIds, startTime, endTime)
+    const { recordIds, patientIds, userIds, startTime, endTime } = this.state
+    getLogs(recordIds, patientIds, userIds, startTime, endTime)
     .then((logs) => {
       console.log(logs)
       this.setState({ logs })

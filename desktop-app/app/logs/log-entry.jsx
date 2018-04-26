@@ -2,11 +2,12 @@ import React from 'react'
 
 const LogEntry = (props) => {
   const log = props.log
+  console.log(log)
 
   return (
     <div>
-      <span>{log.value.update.actionType}</span>
-      <span>{log.value.update.dataType}</span>
+      <span>{log.value.actionType}</span>
+      <span>{log.value.dataType}</span>
     </div>
   )
 }

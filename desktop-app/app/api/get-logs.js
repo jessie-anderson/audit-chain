@@ -1,12 +1,11 @@
 import axios from 'axios'
 import Promise from 'bluebird'
 
-export default function getLogs(patientIds, userIds, startTime, endTime) {
+export default function getLogs(recordIds, patientIds, userIds, startTime, endTime) {
   const params = {
+    recordIds: recordIds ? recordIds.join() : null,
     patientIds: patientIds ? patientIds.join() : null,
     userIds: userIds ? userIds.join() : null,
-    startTime,
-    endTime,
   }
 
   const headers = {

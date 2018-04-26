@@ -109,7 +109,19 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("Expecting 12 arguments; got %d", len(args)))
 	}
 
-	recordEvent, recordErr := s.CreateRecordEvent(args[1:])
+	recordArgs := make([]string, len(args)-1)
+	copy(recordArgs, args[1:])
+	patientArgs := make([]string, len(args)-1)
+	copy(patientArgs[:1], args[:1])
+	copy(patientArgs[1:], args[2:])
+	userArgs := make([]string, len(args)-1)
+	copy(userArgs[:2], args[:2])
+	copy(userArgs[2:], args[3:])
+	fmt.Println(recordArgs)
+	fmt.Println(patientArgs)
+	fmt.Println(userArgs)
+
+	recordEvent, recordErr := s.CreateRecordEvent(recordArgs)
 	if recordErr != nil {
 		return shim.Error(fmt.Sprintf("%+v", recordErr))
 	}
@@ -118,7 +130,7 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("Error marshaling RecordEvent: %+v", recordBytesErr))
 	}
 
-	patientEvent, patientErr := s.CreatePatientEvent(append(args[0:1], args[2:]...))
+	patientEvent, patientErr := s.CreatePatientEvent(patientArgs)
 	if patientErr != nil {
 		return shim.Error(fmt.Sprintf("%+v", patientErr))
 	}
@@ -127,7 +139,7 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("Error marshaling PatientEvent: %+v", patientBytesErr))
 	}
 
-	userEvent, userErr := s.CreateUserEvent(append(args[0:2], args[3:]...))
+	userEvent, userErr := s.CreateUserEvent(userArgs)
 	if userErr != nil {
 		return shim.Error(fmt.Sprintf("%+v", userErr))
 	}
@@ -240,28 +252,62 @@ func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, ar
 	return shim.Success(buffer.Bytes())
 }
 
+func (s *SmartContract) GetIds(iter shim.StateQueryIteratorInterface) []string {
+	var ids []string
+	for iter.HasNext() {
+		res, err := iter.Next()
+		if err == nil {
+			ids = append(ids, res.Key)
+		}
+	}
+	return ids
+}
+
 func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	if len(args) != 4 {
-		return shim.Error(fmt.Sprintf("Expecting 4 arguments; got %d", len(args)))
+	if len(args) != 5 {
+		return shim.Error(fmt.Sprintf("Expecting 5 arguments; got %d", len(args)))
 	}
 	recordIds := strings.Split(args[0], ",")
 	patientIds := strings.Split(args[1], ",")
 	userIds := strings.Split(args[2], ",")
 
+	if recordIds[0] == "" {
+		recordsQueryString := "{\"selector\":{\"_id\":{\"$regex\":\"recordId:*\"}}}"
+		recordsIterator, recordsQueryErr := APIstub.GetQueryResult(recordsQueryString)
+		if recordsQueryErr != nil {
+			recordIds = make([]string, 0)
+		} else {
+			recordIds = s.GetIds(recordsIterator)
+		}
+	}
+
+	if patientIds[0] == "" {
+		patientsQueryString := "{\"_id\":{\"$regex\":\"recordId:*\"}}"
+		patientsIterator, patientsQueryErr := APIstub.GetQueryResult(patientsQueryString)
+		if patientsQueryErr != nil {
+			patientIds = make([]string, 0)
+		} else {
+			patientIds = s.GetIds(patientsIterator)
+		}
+	}
+
+	if userIds[0] == "" {
+		usersQueryString := "{\"_id\":{\"$regex\":\"recordId:*\"}}"
+		usersIterator, usersQueryErr := APIstub.GetQueryResult(usersQueryString)
+		if usersQueryErr != nil {
+			userIds = make([]string, 0)
+		} else {
+			userIds = s.GetIds(usersIterator)
+		}
+	}
+
 	nKeys := len(recordIds) + len(patientIds) + len(userIds)
 	keys := make([]string, nKeys)
+	copy(keys[:len(recordIds)], recordIds)
+	copy(keys[len(recordIds):len(recordIds)+len(patientIds)], patientIds)
+	copy(keys[len(recordIds)+len(patientIds):], userIds)
 
-	for i := 0; i < len(recordIds); i++ {
-		keys[i] = fmt.Sprintf("recordId:%s", recordIds[i])
-	}
-
-	for i := 0; i < len(patientIds); i++ {
-		keys[i+len(recordIds)] = fmt.Sprintf("patientId:%s", patientIds[i])
-	}
-
-	for i := 0; i < len(userIds); i++ {
-		keys[i+len(recordIds)+len(patientIds)] = fmt.Sprintf("userId:%s", userIds[i])
-	}
+	fmt.Println(keys)
 
 	var resultBuffer bytes.Buffer
 	resultBuffer.WriteString("[")
