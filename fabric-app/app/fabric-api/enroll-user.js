@@ -2,7 +2,15 @@ import FabricClient from 'fabric-client'
 import FabricCAClient from 'fabric-ca-client'
 import path from 'path'
 
-export default function enrollUser(req, res, next) {
+export default function enrollUserIfNeeded(req, res, next) {
+  if (req.user.hasChangedPassword) {
+    next()
+  } else {
+    enrollUser(req, res, next)
+  }
+}
+
+function enrollUser(req, res, next) {
   const fabricClient = new FabricClient()
   let fabricCAClient = null
   const storePath = path.join(__dirname, 'hfc-key-store')
@@ -21,15 +29,15 @@ export default function enrollUser(req, res, next) {
       // be sure to change the http to https when the CA is running TLS enabled
     fabricCAClient = new FabricCAClient('https://localhost:7054', null, '', cryptoSuite)
     return fabricCAClient.enroll({
-      enrollmentID: req.body.fabricEnrollmentId,
-      enrollmentSecret: req.body.fabricEnrollmentSecret,
+      enrollmentID: req.body.username,
+      enrollmentSecret: req.body.password,
     })
   })
   .then((enrollment) => {
     console.log('enrollment:')
     console.log(enrollment)
     return fabricClient.createUser(
-      { username: req.body.fabricEnrollmentId,
+      { username: req.body.username,
         mspid: 'Org1MSP',
         cryptoContent: {
           privateKeyPEM: enrollment.key.toBytes(),

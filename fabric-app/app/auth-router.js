@@ -1,14 +1,14 @@
 import { Router } from 'express'
 import passport from 'passport'
 import { enroll, login } from './db-helper/api'
-import enrollUser from './fabric-api/enroll-user'
+import enrollUserIfNeeded from './fabric-api/enroll-user'
 
 const authRouter = Router()
 
 authRouter.route('/enroll')
-  .post(enrollUser, enroll)
+  .post(enroll)
 
 authRouter.route('/login')
-  .post(passport.authenticate('local', { session: false }), login)
+  .post(passport.authenticate('local', { session: false }), enrollUserIfNeeded, login)
 
 export default authRouter

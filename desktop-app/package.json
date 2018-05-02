@@ -24,6 +24,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "bluebird": "^3.5.1",
+    "bootstrap": "^4.1.1",
     "component-dom": "^1.0.8",
     "dotenv": "^5.0.1",
     "electron": "^1.8.3",
