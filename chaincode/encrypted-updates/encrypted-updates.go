@@ -85,23 +85,17 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 
 	if fn == "recordUpdate" {
 		return s.RecordUpdate(APIstub, args)
-	} else if fn == "getRecordHistory" {
-		return s.GetRecordHistory(APIstub, args)
-	} else if fn == "getCreator" {
-		return s.GetCreator(APIstub)
-	} else if fn == "getLogQueryResult" {
-		return s.GetLogQueryResult(APIstub, args)
+	} else if fn == "getAllLogsForTimeRange" {
+		return s.GetAllLogsForTimeRange(APIstub, args)
+	} else if fn == "getAllLogsForUserForTimeRange" {
+		return s.GetAllLogsForUserForTimeRange(APIstub, args)
+	} else if fn == "getAllLogsForPatientForTimeRange" {
+		return s.GetAllLogsForPatientForTimeRange(APIstub, args)
+	} else if fn == "getAllLogsForRecordForTimeRange" {
+		return s.GetAllLogsForRecordForTimeRange(APIstub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("Unrecognized function %s", fn))
-}
-
-func (s *SmartContract) GetCreator(APIstub shim.ChaincodeStubInterface) sc.Response {
-	creator, creatorErr := APIstub.GetCreator()
-	if creatorErr != nil {
-		return shim.Error(fmt.Sprintf("%+v", creatorErr))
-	}
-	return shim.Success(creator)
 }
 
 func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -226,32 +220,6 @@ func (s *SmartContract) IsValidField(field string) bool {
 	return false
 }
 
-func (s *SmartContract) GetRecordHistory(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	if len(args) != 1 {
-		return shim.Error(fmt.Sprintf("Expecting 1 argument; got %d", len(args)))
-	}
-	historyIter, historyErr := APIstub.GetHistoryForKey(fmt.Sprintf("recordId:%s", args[0]))
-	if historyErr != nil {
-		return shim.Error(historyErr.Error())
-	}
-
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	for historyIter.HasNext() {
-		item, err := historyIter.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		buffer.WriteString(string(item.Value))
-		if historyIter.HasNext() {
-			buffer.WriteString(",")
-		}
-	}
-	buffer.WriteString("]")
-	return shim.Success(buffer.Bytes())
-}
-
 func (s *SmartContract) GetIds(iter shim.StateQueryIteratorInterface) []string {
 	var ids []string
 	for iter.HasNext() {
@@ -263,52 +231,7 @@ func (s *SmartContract) GetIds(iter shim.StateQueryIteratorInterface) []string {
 	return ids
 }
 
-func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	if len(args) != 5 {
-		return shim.Error(fmt.Sprintf("Expecting 5 arguments; got %d", len(args)))
-	}
-	recordIds := strings.Split(args[0], ",")
-	patientIds := strings.Split(args[1], ",")
-	userIds := strings.Split(args[2], ",")
-
-	if recordIds[0] == "" {
-		recordsQueryString := "{\"selector\":{\"_id\":{\"$regex\":\"recordId:*\"}}}"
-		recordsIterator, recordsQueryErr := APIstub.GetQueryResult(recordsQueryString)
-		if recordsQueryErr != nil {
-			recordIds = make([]string, 0)
-		} else {
-			recordIds = s.GetIds(recordsIterator)
-		}
-	}
-
-	if patientIds[0] == "" {
-		patientsQueryString := "{\"_id\":{\"$regex\":\"recordId:*\"}}"
-		patientsIterator, patientsQueryErr := APIstub.GetQueryResult(patientsQueryString)
-		if patientsQueryErr != nil {
-			patientIds = make([]string, 0)
-		} else {
-			patientIds = s.GetIds(patientsIterator)
-		}
-	}
-
-	if userIds[0] == "" {
-		usersQueryString := "{\"_id\":{\"$regex\":\"recordId:*\"}}"
-		usersIterator, usersQueryErr := APIstub.GetQueryResult(usersQueryString)
-		if usersQueryErr != nil {
-			userIds = make([]string, 0)
-		} else {
-			userIds = s.GetIds(usersIterator)
-		}
-	}
-
-	nKeys := len(recordIds) + len(patientIds) + len(userIds)
-	keys := make([]string, nKeys)
-	copy(keys[:len(recordIds)], recordIds)
-	copy(keys[len(recordIds):len(recordIds)+len(patientIds)], patientIds)
-	copy(keys[len(recordIds)+len(patientIds):], userIds)
-
-	fmt.Println(keys)
-
+func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, keys []string) sc.Response {
 	var resultBuffer bytes.Buffer
 	resultBuffer.WriteString("[")
 	for i, key := range keys {
@@ -339,6 +262,47 @@ func (s *SmartContract) GetLogQueryResult(APIstub shim.ChaincodeStubInterface, a
 	}
 	resultBuffer.WriteString("]")
 	return shim.Success(resultBuffer.Bytes())
+}
+
+func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 2 {
+		return shim.Error(fmt.Sprintf("Expecting 2 arguments; got %d", len(args)))
+	}
+
+	// get logs indexed on recordId (arbitrary)
+	queryString := "{\"selector\":{\"_id\":{\"$regex\":\"recordId:*\"}}}"
+	iterator, queryErr := APIstub.GetQueryResult(queryString)
+	if queryErr != nil {
+		return shim.Error("There was a problem executing the query")
+	}
+
+	keys := s.GetIds(iterator)
+	return s.GetHistoryForKeys(APIstub, keys)
+
+}
+
+func (s *SmartContract) GetAllLogsForUserForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 3 {
+		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("userId:%s", args[2])})
+}
+
+func (s *SmartContract) GetAllLogsForPatientForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 3 {
+		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("patientId:%s", args[2])})
+}
+
+func (s *SmartContract) GetAllLogsForRecordForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 3 {
+		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("recordId:%s", args[2])})
 }
 
 func main() {
