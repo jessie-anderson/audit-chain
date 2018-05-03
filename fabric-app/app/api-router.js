@@ -1,18 +1,29 @@
 import { Router } from 'express'
-import { recordUpdate, historyForRecord, getQueryCreator, filterQuery } from './fabric-api/api'
+import {
+  recordUpdate,
+  historyForRecord,
+  historyForUser,
+  historyForPatient,
+  allHistory
+} from './fabric-api/api'
 import { enroll } from './db-helper/api'
 
 const apiRouter = Router()
 
 apiRouter.route('/logs/:recordid/:patientid/:userid/:peerName')
 .post(recordUpdate)
+
+apiRouter.route('/logs/:start/:end/:peerName')
+.get(allHistory)
+
+apiRouter.route('/logs/:start/:end/:recordId/:peerName')
 .get(historyForRecord)
 
-apiRouter.route('/creator/:peerName')
-.get(getQueryCreator)
+apiRouter.route('/logs/:start/:end/:patientId/:peerName')
+.get(historyForPatient)
 
-apiRouter.route('/logs/:peerName')
-.get(filterQuery)
+apiRouter.route('/logs/:start/:end/:userId/:peerName')
+.get(historyForUser)
 
 apiRouter.route('/enroll')
 .post(enroll)

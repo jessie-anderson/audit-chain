@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import registerUser from './fabric-api/register-user'
-import { recordUpdate, historyForRecord, getQueryCreator, filterQuery } from './fabric-api/api'
+import { recordUpdate, historyForRecord, filterQuery } from './fabric-api/api'
 
 export const apiRouter = Router()
 export const rootRouter = Router()
@@ -13,9 +13,6 @@ rootRouter.route('/registeruser')
 apiRouter.route('/logs/:recordid/:peerName')
   .post(recordUpdate)
   .get(historyForRecord)
-
-apiRouter.route('/creator/:peerName')
-  .get(getQueryCreator)
 
 apiRouter.route('/logs/:peerName')
   .get(filterQuery)
