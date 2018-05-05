@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -40,6 +41,7 @@ type RecordEvent struct {
 	UserNPI           string `json:"userNpi"`
 	OriginalAuthorNPI string `json:"originalAuthorNpi"`
 	OrganizationNPI   string `json:"organizationNpi"`
+	Time              int64  `json:"time"`
 }
 
 /** PatientEvent
@@ -57,6 +59,7 @@ type PatientEvent struct {
 	UserNPI           string `json:"userNpi"`
 	OriginalAuthorNPI string `json:"originalAuthorNpi"`
 	OrganizationNPI   string `json:"organizationNpi"`
+	Time              int64  `json:"time"`
 }
 
 /** UserEvent
@@ -74,6 +77,23 @@ type UserEvent struct {
 	UserNPI           string `json:"userNpi"`
 	OriginalAuthorNPI string `json:"originalAuthorNpi"`
 	OrganizationNPI   string `json:"organizationNpi"`
+	Time              int64  `json:"time"`
+}
+
+type Event struct {
+	ActionType        string `json:"actionType"`
+	PatientID         string `json:"patientId"`
+	RecordID          string `json:"recordId"`
+	UserID            string `json:"userId"`
+	DataType          string `json:"dataType"`
+	OriginalAuthorID  string `json:"originalAuthorId"`
+	DataField         string `json:"dataField"`
+	Data              string `json:"data"`
+	EntryMethod       string `json:"entryMethod"`
+	UserNPI           string `json:"userNpi"`
+	OriginalAuthorNPI string `json:"originalAuthorNpi"`
+	OrganizationNPI   string `json:"organizationNpi"`
+	Time              int64  `json:"time"`
 }
 
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) sc.Response {
@@ -99,8 +119,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 }
 
 func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
-	if len(args) != 12 {
-		return shim.Error(fmt.Sprintf("Expecting 12 arguments; got %d", len(args)))
+	if len(args) != 13 {
+		return shim.Error(fmt.Sprintf("Expecting 13 arguments; got %d", len(args)))
 	}
 
 	recordArgs := make([]string, len(args)-1)
@@ -149,62 +169,113 @@ func (s *SmartContract) RecordUpdate(APIstub shim.ChaincodeStubInterface, args [
 	return shim.Success([]byte("successfully updated ledger"))
 }
 
-func (s *SmartContract) GetByteArrayFromArgs(args []string) ([]byte, error) {
+func (s *SmartContract) GetByteArrayFromEvents(events []Event) ([]byte, error) {
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+	for i, event := range events {
+		marshaledEvent, marshalErr := json.Marshal(event)
+		if marshalErr != nil {
+			return []byte{}, marshalErr
+		}
+		if i > 0 {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString(fmt.Sprintf("{%s}", marshaledEvent))
+	}
+	buffer.WriteString("]")
+	return buffer.Bytes(), nil
+}
+
+func (s *SmartContract) GetStringMapFromArgs(args []string) (map[string]string, error) {
 	details := map[string]string{}
 	for i := 0; i < len(args); i++ {
 		pieces := strings.Split(args[i], ":")
 		if len(pieces) != 2 {
-			return []byte{}, fmt.Errorf("Incorrectly formatted argument %s", args[i])
+			return details, fmt.Errorf("Incorrectly formatted argument %s", args[i])
 		}
 		if s.IsValidField(pieces[0]) {
 			details[pieces[0]] = pieces[1]
 		} else {
-			return []byte{}, fmt.Errorf("invalid field %s", pieces[0])
+			return details, fmt.Errorf("invalid field %s", pieces[0])
 		}
 	}
-
-	marshaled, marshalErr := json.Marshal(details)
-	if marshalErr != nil {
-		return []byte{}, fmt.Errorf("Error marshalling map: %+v", marshalErr)
-	}
-	return marshaled, nil
+	return details, nil
 }
 
 func (s *SmartContract) CreateRecordEvent(args []string) (RecordEvent, error) {
-	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
-	if marshalErr != nil {
-		return RecordEvent{}, marshalErr
+	stringMap, mapErr := s.GetStringMapFromArgs(args)
+	if mapErr != nil {
+		return RecordEvent{}, mapErr
 	}
-	recordEvent := RecordEvent{}
-	unmarshalErr := json.Unmarshal(marshaled, &recordEvent)
-	if unmarshalErr != nil {
-		return recordEvent, fmt.Errorf("Error unmarshaling into RecordEvent: %+v", unmarshalErr)
+	time, timeConvErr := strconv.ParseInt(stringMap["time"], 10, 64)
+	if timeConvErr != nil {
+		return RecordEvent{}, timeConvErr
+	}
+	recordEvent := RecordEvent{
+		ActionType:        stringMap["actionType"],
+		PatientID:         stringMap["patientId"],
+		UserID:            stringMap["userId"],
+		DataType:          stringMap["dataType"],
+		OriginalAuthorID:  stringMap["originalAuthorId"],
+		DataField:         stringMap["dataField"],
+		Data:              stringMap["data"],
+		EntryMethod:       stringMap["entryMethod"],
+		UserNPI:           stringMap["userNpi"],
+		OriginalAuthorNPI: stringMap["originalAuthorNpi"],
+		OrganizationNPI:   stringMap["organizationNpi"],
+		Time:              time,
 	}
 	return recordEvent, nil
 }
 
 func (s *SmartContract) CreatePatientEvent(args []string) (PatientEvent, error) {
-	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
-	if marshalErr != nil {
-		return PatientEvent{}, marshalErr
+	stringMap, mapErr := s.GetStringMapFromArgs(args)
+	if mapErr != nil {
+		return PatientEvent{}, mapErr
 	}
-	patientEvent := PatientEvent{}
-	unmarshalErr := json.Unmarshal(marshaled, &patientEvent)
-	if unmarshalErr != nil {
-		return patientEvent, fmt.Errorf("Error unmarshaling into PatientEvent: %+v", unmarshalErr)
+	time, timeConvErr := strconv.ParseInt(stringMap["time"], 10, 64)
+	if timeConvErr != nil {
+		return PatientEvent{}, timeConvErr
+	}
+	patientEvent := PatientEvent{
+		ActionType:        stringMap["actionType"],
+		RecordID:          stringMap["recordId"],
+		UserID:            stringMap["userId"],
+		DataType:          stringMap["dataType"],
+		OriginalAuthorID:  stringMap["originalAuthorId"],
+		DataField:         stringMap["dataField"],
+		Data:              stringMap["data"],
+		EntryMethod:       stringMap["entryMethod"],
+		UserNPI:           stringMap["userNpi"],
+		OriginalAuthorNPI: stringMap["originalAuthorNpi"],
+		OrganizationNPI:   stringMap["organizationNpi"],
+		Time:              time,
 	}
 	return patientEvent, nil
 }
 
 func (s *SmartContract) CreateUserEvent(args []string) (UserEvent, error) {
-	marshaled, marshalErr := s.GetByteArrayFromArgs(args)
-	if marshalErr != nil {
-		return UserEvent{}, marshalErr
+	stringMap, mapErr := s.GetStringMapFromArgs(args)
+	if mapErr != nil {
+		return UserEvent{}, mapErr
 	}
-	userEvent := UserEvent{}
-	unmarshalErr := json.Unmarshal(marshaled, &userEvent)
-	if unmarshalErr != nil {
-		return userEvent, fmt.Errorf("Error unmarshaling into UserEvent: %+v", unmarshalErr)
+	time, timeConvErr := strconv.ParseInt(stringMap["time"], 10, 64)
+	if timeConvErr != nil {
+		return UserEvent{}, timeConvErr
+	}
+	userEvent := UserEvent{
+		ActionType:        stringMap["actionType"],
+		PatientID:         stringMap["patientId"],
+		RecordID:          stringMap["recordId"],
+		DataType:          stringMap["dataType"],
+		OriginalAuthorID:  stringMap["originalAuthorId"],
+		DataField:         stringMap["dataField"],
+		Data:              stringMap["data"],
+		EntryMethod:       stringMap["entryMethod"],
+		UserNPI:           stringMap["userNpi"],
+		OriginalAuthorNPI: stringMap["originalAuthorNpi"],
+		OrganizationNPI:   stringMap["organizationNpi"],
+		Time:              time,
 	}
 	return userEvent, nil
 }
@@ -214,7 +285,7 @@ func (s *SmartContract) IsValidField(field string) bool {
 	case
 		"actionType", "userId", "patientId", "recordId", "dataType", "originalAuthorId",
 		"dataField", "data", "entryMethod", "userNpi", "originalAuthorNpi",
-		"organizationNpi":
+		"organizationNpi", "time":
 		return true
 	}
 	return false
@@ -264,6 +335,140 @@ func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, k
 	return shim.Success(resultBuffer.Bytes())
 }
 
+func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+	if len(args) != 5 {
+		return shim.Error(fmt.Sprintf("Expecting 2 arguments; got %d", len(args)))
+	}
+
+	recordIds := strings.Split(args[2], ",")
+	userIds := strings.Split(args[3], ",")
+	patientIds := strings.Split(args[4], ",")
+
+	useRecordIds := len(recordIds) > 0 && recordIds[0] != ""
+	useUserIds := len(userIds) > 0 && userIds[0] != ""
+	usePatientIds := len(patientIds) > 0 && patientIds[0] != ""
+
+	var keys []string
+	var flag int
+
+	if useRecordIds {
+		keys = recordIds
+		flag = 0
+	} else if useUserIds {
+		keys = userIds
+		flag = 1
+	} else if usePatientIds {
+		keys = patientIds
+		flag = 2
+	} else {
+		return s.GetAllLogsForTimeRange(APIstub, args[:2])
+	}
+
+	var events []Event
+	for _, key := range keys {
+		historyIterator, historyErr := APIstub.GetHistoryForKey(key)
+		if historyErr != nil {
+			return shim.Error(historyErr.Error())
+		}
+		for historyIterator.HasNext() {
+			item, itemErr := historyIterator.Next()
+			if itemErr != nil {
+				return shim.Error(itemErr.Error())
+			}
+			if flag == 0 {
+				val := RecordEvent{}
+				unmarshalErr := json.Unmarshal(item.Value, val)
+				if unmarshalErr != nil {
+					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
+				}
+				if useUserIds && !contains(userIds, val.UserID) {
+					continue
+				}
+				if usePatientIds && !contains(patientIds, val.PatientID) {
+					continue
+				}
+				event := Event{
+					ActionType:        val.ActionType,
+					PatientID:         val.PatientID,
+					RecordID:          strings.Split(key, ":")[1],
+					UserID:            val.UserID,
+					DataType:          val.DataType,
+					OriginalAuthorID:  val.OriginalAuthorID,
+					DataField:         val.DataField,
+					Data:              val.Data,
+					EntryMethod:       val.EntryMethod,
+					UserNPI:           val.UserNPI,
+					OriginalAuthorNPI: val.OriginalAuthorNPI,
+					OrganizationNPI:   val.OrganizationNPI,
+				}
+				events = append(events, event)
+			}
+			if flag == 1 {
+				val := UserEvent{}
+				unmarshalErr := json.Unmarshal(item.Value, val)
+				if unmarshalErr != nil {
+					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
+				}
+				if usePatientIds && !contains(patientIds, val.PatientID) {
+					continue
+				}
+
+				event := Event{
+					ActionType:        val.ActionType,
+					PatientID:         val.PatientID,
+					RecordID:          val.RecordID,
+					UserID:            strings.Split(key, ":")[1],
+					DataType:          val.DataType,
+					OriginalAuthorID:  val.OriginalAuthorID,
+					DataField:         val.DataField,
+					Data:              val.Data,
+					EntryMethod:       val.EntryMethod,
+					UserNPI:           val.UserNPI,
+					OriginalAuthorNPI: val.OriginalAuthorNPI,
+					OrganizationNPI:   val.OrganizationNPI,
+				}
+				events = append(events, event)
+			}
+			if flag == 2 {
+				val := PatientEvent{}
+				unmarshalErr := json.Unmarshal(item.Value, val)
+				if unmarshalErr != nil {
+					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
+				}
+				event := Event{
+					ActionType:        val.ActionType,
+					PatientID:         strings.Split(key, ":")[1],
+					RecordID:          val.RecordID,
+					UserID:            val.UserID,
+					DataType:          val.DataType,
+					OriginalAuthorID:  val.OriginalAuthorID,
+					DataField:         val.DataField,
+					Data:              val.Data,
+					EntryMethod:       val.EntryMethod,
+					UserNPI:           val.UserNPI,
+					OriginalAuthorNPI: val.OriginalAuthorNPI,
+					OrganizationNPI:   val.OrganizationNPI,
+				}
+				events = append(events, event)
+			}
+		}
+	}
+	eventsAsBytes, toBytesErr := s.GetByteArrayFromEvents(events)
+	if toBytesErr != nil {
+		return shim.Error(fmt.Sprintf("Error getting byte array: %+v", toBytesErr))
+	}
+	return shim.Success(eventsAsBytes)
+}
+
+func contains(arr []string, s string) bool {
+	for _, val := range arr {
+		if val == s {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	if len(args) != 2 {
 		return shim.Error(fmt.Sprintf("Expecting 2 arguments; got %d", len(args)))
@@ -277,6 +482,8 @@ func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterfa
 	}
 
 	keys := s.GetIds(iterator)
+	fmt.Print("Keys: ")
+	fmt.Println(keys)
 	return s.GetHistoryForKeys(APIstub, keys)
 
 }

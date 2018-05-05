@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 import query from './query'
 import transaction from './transaction'
 
@@ -41,48 +43,48 @@ export function historyForRecord(req, res) {
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getRecordHistory',
-    args: [req.params.start, req.params.end, req.params.recordId],
+    args: [
+      req.query.startTime || '',
+      req.query.endTime || '',
+      req.query.recordId,
+    ],
   }
 
-  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
-    handleResult(err, result, res)
-  })
+  doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
 }
 
 export function historyForPatient(req, res) {
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForPatientForTimeRange',
-    args: [req.params.start, req.params.end, req.params.patientId],
+    args: [
+      req.query.startTime || '',
+      req.query.endTime || '',
+      req.query.patientId,
+    ],
   }
 
-  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
-    handleResult(err, result, res)
-  })
+  doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
 }
 
 export function historyForUser(req, res) {
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForUserForTimeRange',
-    args: [req.params.start, req.params.end, req.params.userId],
+    args: [req.query.startTime || '', req.query.endTime || '', req.query.userId],
   }
 
-  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
-    handleResult(err, result, res)
-  })
+  doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
 }
 
 export function allHistory(req, res) {
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForTimeRange',
-    args: [req.params.start, req.params.end],
+    args: [req.query.startTime || '', req.query.endTime || ''],
   }
 
-  query(request, req.user.fabricEnrollmentId, req.params.peerName, (err, result) => {
-    handleResult(err, result, res)
-  })
+  doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
 }
 
 function formatArgs(object, keyArgs) {
@@ -102,4 +104,21 @@ function handleResult(err, result, res) {
   } else {
     res.json(result)
   }
+}
+
+function doQuery(request, fabricEnrollmentId, peerName, res) {
+  query(request, fabricEnrollmentId, peerName, (err, result) => {
+    let results
+    if (result) {
+      results = JSON.parse(result)
+      // sort by time
+      results = _.sortBy(results, (r) => {
+        return r.time.seconds + (r.time.nanoseconds / parseFloat(1000000000))
+      })
+      results.forEach((r) => {
+        r.time = (new Date((r.time.seconds * 1000) + (r.time.nanoseconds / 1000000))).toString()
+      })
+    }
+    handleResult(err, results, res)
+  })
 }

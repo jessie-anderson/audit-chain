@@ -1,5 +1,5 @@
 import React from 'react'
-import getLogs from '../api/get-logs'
+import { getAllLogs } from '../api/get-logs'
 
 class AuditLogs extends React.Component {
   constructor() {
@@ -10,14 +10,15 @@ class AuditLogs extends React.Component {
     boundMethods.forEach((m) => {
       this[m] = this[m].bind(this)
     })
-    this.state = {}
+    this.state = {
+      logs: [],
+    }
   }
 
   componentWillMount() {
-    const { recordIds, patientIds, userIds, startTime, endTime } = this.state
-    getLogs(recordIds, patientIds, userIds, startTime, endTime)
+    const { startTime, endTime } = this.state
+    getAllLogs(startTime, endTime)
     .then((logs) => {
-      console.log(logs)
       this.setState({ logs })
     })
     .catch((errorResponse) => {
@@ -27,7 +28,6 @@ class AuditLogs extends React.Component {
 
   renderLogs() {
     if (this.state.logs) {
-      console.log(this.state.logs.length)
       return this.state.logs.map((l, i) => {
         return (
           <tr>
@@ -44,6 +44,7 @@ class AuditLogs extends React.Component {
       return undefined
     }
   }
+
   render() {
     const logs = this.renderLogs()
     return (
