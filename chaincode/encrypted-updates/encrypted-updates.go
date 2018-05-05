@@ -322,7 +322,7 @@ func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, k
 			if unmarshalErr != nil {
 				return shim.Error(unmarshalErr.Error())
 			}
-			if event.Time < start || event.Time > end {
+			if (start >= 0 && event.Time < start) || (end >= 0 && event.Time > end) {
 				continue
 			}
 			missingField := strings.Split(key, ":")[0]
@@ -369,11 +369,11 @@ func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStu
 
 	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
 	if startParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+		start = -1 // no start time specified
 	}
 	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
 	if endParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+		end = -1 // no end time specified
 	}
 
 	recordIds := strings.Split(args[2], ",")
@@ -417,7 +417,7 @@ func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStu
 			if unmarshalErr != nil {
 				return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
 			}
-			if event.Time < start || event.Time > end {
+			if (start >= 0 && event.Time < start) || (end >= 0 && event.Time > end) {
 				continue
 			}
 			missingField := strings.Split(key, ":")[1]
@@ -465,11 +465,11 @@ func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterfa
 
 	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
 	if startParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+		start = -1
 	}
 	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
 	if endParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+		end = -1
 	}
 
 	// get logs indexed on recordId (arbitrary)
@@ -496,7 +496,7 @@ func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterfa
 			if unmarshalErr != nil {
 				return shim.Error(unmarshalErr.Error())
 			}
-			if event.Time < start || event.Time > end {
+			if (start >= 0 && event.Time < start) || (end >= 0 && event.Time > end) {
 				continue
 			}
 			event.RecordID = strings.Split(key, ":")[1]
@@ -517,11 +517,11 @@ func (s *SmartContract) GetAllLogsForUserForTimeRange(APIstub shim.ChaincodeStub
 
 	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
 	if startParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+		start = -1
 	}
 	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
 	if endParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+		end = -1
 	}
 
 	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("userId:%s", args[2])}, start, end)
@@ -534,11 +534,11 @@ func (s *SmartContract) GetAllLogsForPatientForTimeRange(APIstub shim.ChaincodeS
 
 	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
 	if startParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+		start = -1
 	}
 	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
 	if endParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+		end = -1
 	}
 
 	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("patientId:%s", args[2])}, start, end)
@@ -551,11 +551,11 @@ func (s *SmartContract) GetAllLogsForRecordForTimeRange(APIstub shim.ChaincodeSt
 
 	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
 	if startParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+		start = -1
 	}
 	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
 	if endParseErr != nil {
-		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+		end = -1
 	}
 
 	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("recordId:%s", args[2])}, start, end)

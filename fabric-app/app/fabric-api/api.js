@@ -13,6 +13,7 @@ const fields = new Set([
   'userNpi',
   'originalAuthorNpi',
   'organizationNpi',
+  'time',
 ])
 
 export function recordUpdate(req, res) {
@@ -82,6 +83,22 @@ export function allHistory(req, res) {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForTimeRange',
     args: [req.query.startTime || '', req.query.endTime || ''],
+  }
+
+  doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
+}
+
+export function historyForQuery(req, res) {
+  const request = {
+    chaincodeId: 'encrypted-updates',
+    fcn: 'getAllLogsForQueryForTimeRange',
+    args: [
+      req.query.startTime || '',
+      req.query.endTime || '',
+      req.query.recordIds || '',
+      req.query.userIds || '',
+      req.query.patientIds || '',
+    ],
   }
 
   doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)

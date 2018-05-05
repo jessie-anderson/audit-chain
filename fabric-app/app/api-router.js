@@ -4,6 +4,7 @@ import {
   historyForRecord,
   historyForUser,
   historyForPatient,
+  historyForQuery,
   allHistory,
 } from './fabric-api/api'
 import { enroll } from './db-helper/api'
@@ -24,6 +25,9 @@ apiRouter.route('/logs/patient/:peerName')
 
 apiRouter.route('/logs/user/:peerName')
 .get(historyForUser)
+
+apiRouter.route('/logs/query/:peerName')
+.get(historyForQuery)
 
 apiRouter.route('/enroll')
 .post(enroll)
