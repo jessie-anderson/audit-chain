@@ -23,6 +23,7 @@ for (let i = 0; i < 100; i += 1) {
     return `${f}:${makeString()}`
   })
   console.log(args)
+  args.push(`time:${Date.now()}`)
   requests.push({
     chaincodeId: 'encrypted-updates',
     fcn: 'recordUpdate',

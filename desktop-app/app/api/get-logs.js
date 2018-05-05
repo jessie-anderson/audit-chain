@@ -25,6 +25,7 @@ export function getLogs(recordIds, patientIds, userIds, startTime, endTime) {
 
 export function getAllLogs(startTime, endTime) {
   const query = { startTime, endTime }
+  console.log(query)
   const route = `${process.env.API_URL}/logs/all/${peerName}`
   return handleGetWithQuery(route, query)
 }
@@ -41,17 +42,23 @@ export function getLogsForUser(startTime, endTime, userId) {
   return handleGetWithQuery(route, query)
 }
 
-export function getLogsFoRecord(startTime, endTime, recordId) {
+export function getLogsForRecord(startTime, endTime, recordId) {
   const query = { startTime, endTime, recordId }
   const route = `${process.env.API_URL}/logs/record/${peerName}`
   return handleGetWithQuery(route, query)
 }
 
-function handleGetWithQuery(route, query) {
+export function getLogsForQuery(startTime, endTime, recordIds, userIds, patientIds) {
+  const query = { startTime, endTime, recordIds, userIds, patientIds }
+  const route = `${process.env.API_URL}/logs/query/${peerName}`
+  return handleGetWithQuery(route, query)
+}
+
+function handleGetWithQuery(route, params) {
   const headers = {
     authorization: `bearer ${localStorage.getItem('token')}`,
   }
-  return axios.get(route, { query, headers })
+  return axios.get(route, { params, headers })
   .then((response) => {
     return Promise.resolve(response.data)
   })

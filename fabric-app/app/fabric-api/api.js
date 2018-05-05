@@ -79,6 +79,7 @@ export function historyForUser(req, res) {
 }
 
 export function allHistory(req, res) {
+  console.log(req.query)
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForTimeRange',
@@ -129,12 +130,7 @@ function doQuery(request, fabricEnrollmentId, peerName, res) {
     if (result) {
       results = JSON.parse(result)
       // sort by time
-      results = _.sortBy(results, (r) => {
-        return r.time.seconds + (r.time.nanoseconds / parseFloat(1000000000))
-      })
-      results.forEach((r) => {
-        r.time = (new Date((r.time.seconds * 1000) + (r.time.nanoseconds / 1000000))).toString()
-      })
+      results = _.sortBy(results, (r) => { return r.time })
     }
     handleResult(err, results, res)
   })

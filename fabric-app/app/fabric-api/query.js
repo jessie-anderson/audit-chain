@@ -31,7 +31,6 @@ export default function query(request, username, peerName, fn) {
     return channel.queryByChaincode(request)
   })
   .then((result) => {
-    console.log('Response: ', result[0].toString())
     fn(null, result[0].toString())
   })
   .catch((error) => {
