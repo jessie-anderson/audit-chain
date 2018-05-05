@@ -113,6 +113,8 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) sc.Response 
 		return s.GetAllLogsForPatientForTimeRange(APIstub, args)
 	} else if fn == "getAllLogsForRecordForTimeRange" {
 		return s.GetAllLogsForRecordForTimeRange(APIstub, args)
+	} else if fn == "getAllLogsForQueryForTimeRange" {
+		return s.GetAllLogsForQueryForTimeRange(APIstub, args)
 	}
 
 	return shim.Error(fmt.Sprintf("Unrecognized function %s", fn))
@@ -302,13 +304,9 @@ func (s *SmartContract) GetIds(iter shim.StateQueryIteratorInterface) []string {
 	return ids
 }
 
-func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, keys []string) sc.Response {
-	var resultBuffer bytes.Buffer
-	resultBuffer.WriteString("[")
-	for i, key := range keys {
-		if i > 0 {
-			resultBuffer.WriteString(",")
-		}
+func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, keys []string, start int64, end int64) sc.Response {
+	var events []Event
+	for _, key := range keys {
 		historyIterator, historyErr := APIstub.GetHistoryForKey(key)
 		if historyErr != nil {
 			return shim.Error(historyErr.Error())
@@ -319,25 +317,63 @@ func (s *SmartContract) GetHistoryForKeys(APIstub shim.ChaincodeStubInterface, k
 			if itemErr != nil {
 				return shim.Error(itemErr.Error())
 			}
-
-			resultBuffer.WriteString("{\"value\": ")
-			resultBuffer.WriteString(string(item.Value))
-			resultBuffer.WriteString(", \"time\": {")
-			resultBuffer.WriteString(fmt.Sprintf("\"seconds\": \"%d\",", item.Timestamp.GetSeconds()))
-			resultBuffer.WriteString(fmt.Sprintf("\"nanoseconds\": \"%d\"", item.Timestamp.GetNanos()))
-			resultBuffer.WriteString("}}")
-			if historyIterator.HasNext() {
-				resultBuffer.WriteString(",")
+			event := Event{}
+			unmarshalErr := json.Unmarshal(item.Value, &event)
+			if unmarshalErr != nil {
+				return shim.Error(unmarshalErr.Error())
 			}
+			if event.Time < start || event.Time > end {
+				continue
+			}
+			missingField := strings.Split(key, ":")[0]
+			missingValue := strings.Split(key, ":")[1]
+			switch missingField {
+			case "recordId":
+				event.RecordID = missingValue
+				break
+			case "userId":
+				event.UserID = missingValue
+				break
+			case "patientId":
+				event.PatientID = missingValue
+				break
+			default:
+				break
+			}
+			events = append(events, event)
 		}
 	}
-	resultBuffer.WriteString("]")
-	return shim.Success(resultBuffer.Bytes())
+	eventsAsBytes, marshalErr := json.Marshal(events)
+	if marshalErr != nil {
+		return shim.Error(marshalErr.Error())
+	}
+	return shim.Success(eventsAsBytes)
 }
 
+/**
+	* GetAllLogsForQueryForTimeRange()
+	* args[0]: start time
+	* args[1]: end time
+	* args[2]: comma-separated recordIds; empty string means no filtering on this
+	* field
+	* args[3]: comma-separated userIds; empty string means no filtering on this
+	* field
+	* args[4]: comma-separated patientIds; empty string means no filtering on this
+	* field
+	* OR all ids in same array; AND result; filter by time
+**/
 func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 	if len(args) != 5 {
 		return shim.Error(fmt.Sprintf("Expecting 2 arguments; got %d", len(args)))
+	}
+
+	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
+	if startParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+	}
+	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
+	if endParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
 	}
 
 	recordIds := strings.Split(args[2], ",")
@@ -375,85 +411,38 @@ func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStu
 			if itemErr != nil {
 				return shim.Error(itemErr.Error())
 			}
+
+			event := Event{}
+			unmarshalErr := json.Unmarshal(item.Value, &event)
+			if unmarshalErr != nil {
+				return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
+			}
+			if event.Time < start || event.Time > end {
+				continue
+			}
+			missingField := strings.Split(key, ":")[1]
+
 			if flag == 0 {
-				val := RecordEvent{}
-				unmarshalErr := json.Unmarshal(item.Value, val)
-				if unmarshalErr != nil {
-					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
-				}
-				if useUserIds && !contains(userIds, val.UserID) {
+				if useUserIds && !contains(userIds, event.UserID) {
 					continue
 				}
-				if usePatientIds && !contains(patientIds, val.PatientID) {
+				if usePatientIds && !contains(patientIds, event.PatientID) {
 					continue
 				}
-				event := Event{
-					ActionType:        val.ActionType,
-					PatientID:         val.PatientID,
-					RecordID:          strings.Split(key, ":")[1],
-					UserID:            val.UserID,
-					DataType:          val.DataType,
-					OriginalAuthorID:  val.OriginalAuthorID,
-					DataField:         val.DataField,
-					Data:              val.Data,
-					EntryMethod:       val.EntryMethod,
-					UserNPI:           val.UserNPI,
-					OriginalAuthorNPI: val.OriginalAuthorNPI,
-					OrganizationNPI:   val.OrganizationNPI,
-				}
-				events = append(events, event)
+				event.RecordID = missingField
 			}
 			if flag == 1 {
-				val := UserEvent{}
-				unmarshalErr := json.Unmarshal(item.Value, val)
-				if unmarshalErr != nil {
-					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
-				}
-				if usePatientIds && !contains(patientIds, val.PatientID) {
+				if usePatientIds && !contains(patientIds, event.PatientID) {
 					continue
 				}
-
-				event := Event{
-					ActionType:        val.ActionType,
-					PatientID:         val.PatientID,
-					RecordID:          val.RecordID,
-					UserID:            strings.Split(key, ":")[1],
-					DataType:          val.DataType,
-					OriginalAuthorID:  val.OriginalAuthorID,
-					DataField:         val.DataField,
-					Data:              val.Data,
-					EntryMethod:       val.EntryMethod,
-					UserNPI:           val.UserNPI,
-					OriginalAuthorNPI: val.OriginalAuthorNPI,
-					OrganizationNPI:   val.OrganizationNPI,
-				}
-				events = append(events, event)
+				event.UserID = missingField
 			}
 			if flag == 2 {
-				val := PatientEvent{}
-				unmarshalErr := json.Unmarshal(item.Value, val)
-				if unmarshalErr != nil {
-					return shim.Error(fmt.Sprintf("Error unmarshaling: %+v", unmarshalErr))
-				}
-				event := Event{
-					ActionType:        val.ActionType,
-					PatientID:         strings.Split(key, ":")[1],
-					RecordID:          val.RecordID,
-					UserID:            val.UserID,
-					DataType:          val.DataType,
-					OriginalAuthorID:  val.OriginalAuthorID,
-					DataField:         val.DataField,
-					Data:              val.Data,
-					EntryMethod:       val.EntryMethod,
-					UserNPI:           val.UserNPI,
-					OriginalAuthorNPI: val.OriginalAuthorNPI,
-					OrganizationNPI:   val.OrganizationNPI,
-				}
-				events = append(events, event)
+				event.PatientID = missingField
 			}
 		}
 	}
-	eventsAsBytes, toBytesErr := s.GetByteArrayFromEvents(events)
+	eventsAsBytes, toBytesErr := json.Marshal(events)
 	if toBytesErr != nil {
 		return shim.Error(fmt.Sprintf("Error getting byte array: %+v", toBytesErr))
 	}
@@ -474,6 +463,15 @@ func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterfa
 		return shim.Error(fmt.Sprintf("Expecting 2 arguments; got %d", len(args)))
 	}
 
+	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
+	if startParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+	}
+	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
+	if endParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+	}
+
 	// get logs indexed on recordId (arbitrary)
 	queryString := "{\"selector\":{\"_id\":{\"$regex\":\"recordId:*\"}}}"
 	iterator, queryErr := APIstub.GetQueryResult(queryString)
@@ -482,10 +480,34 @@ func (s *SmartContract) GetAllLogsForTimeRange(APIstub shim.ChaincodeStubInterfa
 	}
 
 	keys := s.GetIds(iterator)
-	fmt.Print("Keys: ")
-	fmt.Println(keys)
-	return s.GetHistoryForKeys(APIstub, keys)
-
+	var events []Event
+	for _, key := range keys {
+		historyIterator, iteratorErr := APIstub.GetHistoryForKey(key)
+		if iteratorErr != nil {
+			return shim.Error(fmt.Sprintf("Error getting history for key: %+v", iteratorErr))
+		}
+		for historyIterator.HasNext() {
+			item, itemErr := historyIterator.Next()
+			if itemErr != nil {
+				return shim.Error(itemErr.Error())
+			}
+			event := Event{}
+			unmarshalErr := json.Unmarshal(item.Value, &event)
+			if unmarshalErr != nil {
+				return shim.Error(unmarshalErr.Error())
+			}
+			if event.Time < start || event.Time > end {
+				continue
+			}
+			event.RecordID = strings.Split(key, ":")[1]
+			events = append(events, event)
+		}
+	}
+	marshaled, marshalErr := json.Marshal(events)
+	if marshalErr != nil {
+		return shim.Error(marshalErr.Error())
+	}
+	return shim.Success(marshaled)
 }
 
 func (s *SmartContract) GetAllLogsForUserForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -493,7 +515,16 @@ func (s *SmartContract) GetAllLogsForUserForTimeRange(APIstub shim.ChaincodeStub
 		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
 	}
 
-	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("userId:%s", args[2])})
+	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
+	if startParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+	}
+	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
+	if endParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("userId:%s", args[2])}, start, end)
 }
 
 func (s *SmartContract) GetAllLogsForPatientForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -501,7 +532,16 @@ func (s *SmartContract) GetAllLogsForPatientForTimeRange(APIstub shim.ChaincodeS
 		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
 	}
 
-	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("patientId:%s", args[2])})
+	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
+	if startParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+	}
+	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
+	if endParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("patientId:%s", args[2])}, start, end)
 }
 
 func (s *SmartContract) GetAllLogsForRecordForTimeRange(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
@@ -509,7 +549,16 @@ func (s *SmartContract) GetAllLogsForRecordForTimeRange(APIstub shim.ChaincodeSt
 		return shim.Error(fmt.Sprintf("Expecting 3 arguments; got %d", len(args)))
 	}
 
-	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("recordId:%s", args[2])})
+	start, startParseErr := strconv.ParseInt(args[0], 10, 64)
+	if startParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing start time %s as int64", args[0]))
+	}
+	end, endParseErr := strconv.ParseInt(args[1], 10, 64)
+	if endParseErr != nil {
+		return shim.Error(fmt.Sprintf("Error parsing end time %s as int64", args[1]))
+	}
+
+	return s.GetHistoryForKeys(APIstub, []string{fmt.Sprintf("recordId:%s", args[2])}, start, end)
 }
 
 func main() {
