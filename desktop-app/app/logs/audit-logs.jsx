@@ -1,6 +1,12 @@
 import React from 'react'
 import { Button } from 'react-bootstrap'
-import { getAllLogs } from '../api/get-logs'
+import {
+  getAllLogs,
+  getLogsForRecord,
+  getLogsForUser,
+  getLogsForPatient,
+  getLogsForQuery,
+} from '../api/get-logs'
 
 class AuditLogs extends React.Component {
   constructor() {
@@ -133,8 +139,36 @@ class AuditLogs extends React.Component {
   }
 
   filterQuery() {
-    const { startTime, endTime } = this.state
-    getAllLogs(startTime, endTime)
+    const { startTime, endTime, recordIds, patientIds, userIds } = this.state
+    let promise
+    if (
+      recordIds.length === 0
+      && patientIds.length === 0
+      && userIds.length === 0
+    ) {
+      promise = getAllLogs(startTime, endTime)
+    } else if (
+      recordIds.length === 1
+      && patientIds.length === 0
+      && userIds.length === 0
+    ) {
+      promise = getLogsForRecord(startTime, endTime, recordIds[0])
+    } else if (
+      recordIds.length === 0
+      && patientIds.length === 1
+      && userIds.length === 0
+    ) {
+      promise = getLogsForPatient(startTime, endTime, patientIds[0])
+    } else if (
+      recordIds.length === 0
+      && patientIds.length === 0
+      && userIds.length === 1
+    ) {
+      promise = getLogsForUser(startTime, endTime, userIds[0])
+    } else {
+      promise = getLogsForQuery(startTime, endTime, recordIds, userIds, patientIds)
+    }
+    promise
     .then((logs) => {
       this.setState({ logs })
     })

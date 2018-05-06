@@ -43,7 +43,7 @@ export function recordUpdate(req, res) {
 export function historyForRecord(req, res) {
   const request = {
     chaincodeId: 'encrypted-updates',
-    fcn: 'getRecordHistory',
+    fcn: 'getAllLogsForRecordForTimeRange',
     args: [
       req.query.startTime || '',
       req.query.endTime || '',
