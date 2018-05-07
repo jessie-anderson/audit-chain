@@ -17,7 +17,6 @@ const fields = new Set([
 ])
 
 export function recordUpdate(req, res) {
-  console.log(req.user)
   const keyArgs = Object.keys(req.body).filter((k) => {
     return fields.has(k)
   })
@@ -27,7 +26,6 @@ export function recordUpdate(req, res) {
     `patientId:${req.params.patientid}`,
     `userId:${req.params.userid}`,
   )
-  console.log(args)
 
   const request = {
     chaincodeId: 'encrypted-updates',
@@ -79,7 +77,6 @@ export function historyForUser(req, res) {
 }
 
 export function allHistory(req, res) {
-  console.log(req.query)
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForTimeRange',
@@ -90,17 +87,19 @@ export function allHistory(req, res) {
 }
 
 export function historyForQuery(req, res) {
+  console.log(req.query)
   const request = {
     chaincodeId: 'encrypted-updates',
     fcn: 'getAllLogsForQueryForTimeRange',
     args: [
       req.query.startTime || '',
       req.query.endTime || '',
-      req.query.recordIds || '',
-      req.query.userIds || '',
-      req.query.patientIds || '',
+      req.query.recordIds ? req.query.recordIds.join(',') : '',
+      req.query.userIds ? req.query.userIds.join(',') : '',
+      req.query.patientIds ? req.query.patientIds.join(',') : '',
     ],
   }
+  console.log(request)
 
   doQuery(request, req.user.fabricEnrollmentId, req.params.peerName, res)
 }

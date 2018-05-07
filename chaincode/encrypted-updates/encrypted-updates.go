@@ -376,9 +376,27 @@ func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStu
 		end = -1 // no end time specified
 	}
 
-	recordIds := strings.Split(args[2], ",")
-	userIds := strings.Split(args[3], ",")
-	patientIds := strings.Split(args[4], ",")
+	unformattedRecordIds := strings.Split(args[2], ",")
+	recordIds := []string{}
+	for _, id := range unformattedRecordIds {
+		if id != "" {
+			recordIds = append(recordIds, fmt.Sprintf("recordId:%s", id))
+		}
+	}
+	unformattedUserIds := strings.Split(args[3], ",")
+	userIds := []string{}
+	for _, id := range unformattedUserIds {
+		if id != "" {
+			userIds = append(userIds, fmt.Sprintf("userId:%s", id))
+		}
+	}
+	unformattedPatientIds := strings.Split(args[4], ",")
+	patientIds := []string{}
+	for _, id := range unformattedPatientIds {
+		if id != "" {
+			patientIds = append(patientIds, fmt.Sprintf("patientId:%s", id))
+		}
+	}
 
 	useRecordIds := len(recordIds) > 0 && recordIds[0] != ""
 	useUserIds := len(userIds) > 0 && userIds[0] != ""
@@ -423,22 +441,25 @@ func (s *SmartContract) GetAllLogsForQueryForTimeRange(APIstub shim.ChaincodeStu
 			missingField := strings.Split(key, ":")[1]
 
 			if flag == 0 {
-				if useUserIds && !contains(userIds, event.UserID) {
+				if useUserIds && !contains(unformattedUserIds, event.UserID) {
 					continue
 				}
-				if usePatientIds && !contains(patientIds, event.PatientID) {
+				if usePatientIds && !contains(unformattedPatientIds, event.PatientID) {
 					continue
 				}
 				event.RecordID = missingField
+				events = append(events, event)
 			}
 			if flag == 1 {
-				if usePatientIds && !contains(patientIds, event.PatientID) {
+				if usePatientIds && !contains(unformattedPatientIds, event.PatientID) {
 					continue
 				}
 				event.UserID = missingField
+				events = append(events, event)
 			}
 			if flag == 2 {
 				event.PatientID = missingField
+				events = append(events, event)
 			}
 		}
 	}
