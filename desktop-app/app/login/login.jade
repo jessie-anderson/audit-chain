@@ -8,16 +8,21 @@ html
     title Audit Chain
     
   body
-    .login-container
-      .login
-        span Log In
-      .credentials
-        label(htmlFor='username') Username
-        input(id='username' type='text')
-        label(htmlFor='password') Password
-        input(id='password' type='password')
-      .error
-        span(id='error-message')
-      .button
-        button(id='signin-button') Sign In
+    .container
+      .row
+        .col-md-12.col-sm-12.col-xs-12.center-block.text-center(style='padding: 20px 20px 20px 20px')
+          h1 Log In
+      form(id='signin-form')
+        .row.form-group
+          .col-md-6.col-sm-12.col-xs-12.center-block
+            label(htmlFor='username') Username
+            input.form-control(id='username' type='text')
+          .col-md-6.col-sm-12.col-xs-12.center-block
+            label(htmlFor='password') Password
+            input.form-control(id='password' type='password')
+        .row.form-group
+          .col-md-12.col-sm-12.col-xs-12.center-block.text-center(style='padding: 20px 20px 20px 20px')
+            button.btn.btn-default(type='submit') Sign In
+      .row
+        span.col-md-12.col-sm-12.col-xs-12.center-block.text-center(id='error-message')  
     script(type='text/javascript' src='./login.js')

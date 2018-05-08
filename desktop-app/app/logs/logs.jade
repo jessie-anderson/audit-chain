@@ -5,6 +5,13 @@ html
     meta(name='viewport' content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='../../node_modules/bootstrap/dist/css/bootstrap.min.css')
   body
-    .logs(id='logs-container')
-    button(id='return') Return to main page
+    nav.navbar.navbar-expand-sm.bg-light.fixed-top
+      .container
+        ul.navbar-nav.mr-auto(style='width: 100%; padding: 10px 10px 10px 10px')
+          li.nav-item(id='go-home' style='width: 25%; text-align: center') Home
+          li.nav-item(id='view-logs' style='width: 25%; text-align: center') Audit Logs
+          li.nav-item(id='register-user' style='width: 25%; text-align: center') Register User
+          li.nav-item(id='signout-button' style='width: 25%; text-align: center') Sign Out
+    .container(style='padding-top: 100px')
+      .logs(id='logs-container')
     script(type='text/javascript' src='logs.jsx')
