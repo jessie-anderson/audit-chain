@@ -5,12 +5,22 @@ html
     meta(name='viewport' content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='../../node_modules/bootstrap/dist/css/bootstrap.min.css')
   body
-    .username
-      span Temporary Username: 
-      span(id='temp-username')
-    .password
-      span Temporary Password: 
-      span(id='temp-pwd')
-    button(id='return') Return to main page
-    button(id='register-another') Register another user
+    nav.navbar.navbar-expand-sm.bg-light.fixed-top
+      .container
+        ul.navbar-nav.mr-auto(style='width: 100%; padding: 10px 10px 10px 10px')
+          li.nav-item(id='go-home' style='width: 25%; text-align: center') Home
+          li.nav-item(id='view-logs' style='width: 25%; text-align: center') Audit Logs
+          li.nav-item(id='register-user' style='width: 25%; text-align: center') Register User
+          li.nav-item(id='signout-button' style='width: 25%; text-align: center') Sign Out
+    .container(style='padding-top: 100px')
+      .row(style='padding-bottom: 20px')
+        .col-md-12.col-sm-12.col-xs-12.center-block.text-center
+          h1 User Registration Information
+      .row
+        .col-md-6.col-sm-12.col-xs-12.center-block.text-center(style='font-size: 20px')
+          span Temporary Username: 
+          span(id='temp-username')
+        .col-md-6.col-sm-12.col-xs-12.center-block.text-center(style='font-size: 20px')
+          span Temporary Password: 
+          span(id='temp-pwd')
     script(type='text/javascript' src='registration-success.js')

@@ -5,26 +5,59 @@ html
     meta(name='viewport' content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='../../node_modules/bootstrap/dist/css/bootstrap.min.css')
   body
-    .registration
-      .fname
-        label(htmlFor='fname') First Name
-        input(type='text' id='fname')
-      .lname
-        label(htmlFor='lname') Last Name
-        input(type='text' id='lname')
-      .user-id
-        label(htmlFor='user-id') Unique User Identification
-        input(type='text' id='user-id')
-      .npi
-        label(htmlFor='npi') National Provider Identifier
-        input(type='text' id='npi')
-      .role Role
-        input(type='radio' id='admin-role' name='role' value='admin')
-        label(htmlFor='admin-role') Admin
-        input(type='radio' id='doctor-role' name='role' value='doctor')
-        label(htmlFor='doctor-role') Doctor
-        input(type='radio' id='patient-role' name='role' value='patient')
-        label(htmlFor='patient-role') Patient
-      button(id='submit-registration') Register User
-    button(id='return') Return to main page
+    nav.navbar.navbar-expand-sm.bg-light.fixed-top
+      .container
+        ul.navbar-nav.mr-auto(style='width: 100%; padding: 10px 10px 10px 10px')
+          li.nav-item(id='go-home' style='width: 25%; text-align: center') Home
+          li.nav-item(id='view-logs' style='width: 25%; text-align: center') Audit Logs
+          li.nav-item(id='register-user' style='width: 25%; text-align: center') Register User
+          li.nav-item(id='signout-button' style='width: 25%; text-align: center') Sign Out
+    .container(style='padding-top: 100px')
+      form(id='register-user-form')
+        .row.form-group
+          .col-md-4.col-sm-6.col-xs-12.center-block
+            label(htmlFor='fname') First Name
+            input.form-control(type='text' id='fname')
+          .col-md-4.col-sm-6.col-xs-12.center-block
+            label(htmlFor='lname') Last Name
+            input.form-control(type='text' id='lname')
+          .col-md-4.col-sm-6.col-xs-12.center-block
+            label(htmlFor='user-id') Unique User Identification
+            input.form-control(type='text' id='user-id')
+        .row.form-group
+          .col-md-4.col-sm-6.col-xs-12.center-block
+            label(htmlFor='npi') National Provider Identifier
+            input.form-control(type='text' id='npi')
+          .col-md-4.col-sm-6.col-xs-12.center-block
+            label(htmlFor='role') User Role
+            select.form-control(id='role')
+              option Doctor
+              option Patient
+              option Administrator
+        .row.form-group
+          .col-md-12.col-sm-12.col-xs-12.center-block
+            button.btn.btn-default(type='submit') Register User
+            
+    //- .registration
+    //-   .fname
+    //-     label(htmlFor='fname') First Name
+    //-     input(type='text' id='fname')
+    //-   .lname
+    //-     label(htmlFor='lname') Last Name
+    //-     input(type='text' id='lname')
+    //-   .user-id
+    //-     label(htmlFor='user-id') Unique User Identification
+    //-     input(type='text' id='user-id')
+    //-   .npi
+    //-     label(htmlFor='npi') National Provider Identifier
+    //-     input(type='text' id='npi')
+    //-   .role Role
+    //-     input(type='radio' id='admin-role' name='role' value='admin')
+    //-     label(htmlFor='admin-role') Admin
+    //-     input(type='radio' id='doctor-role' name='role' value='doctor')
+    //-     label(htmlFor='doctor-role') Doctor
+    //-     input(type='radio' id='patient-role' name='role' value='patient')
+    //-     label(htmlFor='patient-role') Patient
+    //-   button(id='submit-registration') Register User
+    //- button(id='return') Return to main page
     script(type='text/javascript' src='register.js')

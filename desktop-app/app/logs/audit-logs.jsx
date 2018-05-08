@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from 'react-bootstrap'
+import { Button, Grid, Row, Col, FormControl, Table } from 'react-bootstrap'
 import {
   getAllLogs,
   getLogsForRecord,
@@ -200,12 +200,16 @@ class AuditLogs extends React.Component {
   renderUserIds() {
     return this.state.userIds.map((id, i) => {
       return (
-        <div>
-          {id}
-          <Button onClick={() => { this.removeUserId(i) }}>
-            Remove
-          </Button>
-        </div>
+        <Row bsClass="row padded-row">
+          <Col md={6} sm={12} xs={12}>
+            <span>{id}</span>
+          </Col>
+          <Col md={6} sm={12} xs={12}>
+            <Button onClick={() => { this.removeUserId(i) }}>
+              Remove
+            </Button>
+          </Col>
+        </Row>
       )
     })
   }
@@ -213,12 +217,16 @@ class AuditLogs extends React.Component {
   renderRecordIds() {
     return this.state.recordIds.map((id, i) => {
       return (
-        <div>
-          {id}
-          <Button onClick={() => { this.removeRecordId(i) }}>
-            Remove
-          </Button>
-        </div>
+        <Row bsClass="row padded-row">
+          <Col md={6} sm={12} xs={12}>
+            <span>{id}</span>
+          </Col>
+          <Col md={6} sm={12} xs={12}>
+            <Button onClick={() => { this.removeRecordId(i) }}>
+              Remove
+            </Button>
+          </Col>
+        </Row>
       )
     })
   }
@@ -226,12 +234,16 @@ class AuditLogs extends React.Component {
   renderPatientIds() {
     return this.state.patientIds.map((id, i) => {
       return (
-        <div>
-          {id}
-          <Button onClick={() => { this.removePatientId(i) }}>
-            Remove
-          </Button>
-        </div>
+        <Row bsClass="row padded-row">
+          <Col md={6} sm={12} xs={12}>
+            <span>{id}</span>
+          </Col>
+          <Col md={6} sm={12} xs={12}>
+            <Button onClick={() => { this.removePatientId(i) }}>
+              Remove
+            </Button>
+          </Col>
+        </Row>
       )
     })
   }
@@ -239,57 +251,99 @@ class AuditLogs extends React.Component {
   render() {
     const logs = this.renderLogs()
     return (
-      <div>
-        <label htmlFor="start-time">between</label>
-        <input
-          type="datetime-local"
-          id="start-time"
-          onChange={this.onStartTimeChanged}
-        />
-        <label htmlFor="end-time">and</label>
-        <input
-          type="datetime-local"
-          id="end-time"
-          onChange={this.onEndTimeChanged}
-        />
-        <div>Include records from:</div>
-        <div>
-          <div>Record IDs</div>
-          {this.renderRecordIds()}
-          <input
-            type="text"
-            onChange={this.onCurrentRecordIdChange}
-            onKeyUp={this.onRecordIdKeyUp}
-            id="record-id-input"
-          />
-          <Button onClick={this.onAddRecordId}>
-            Add
-          </Button>
-          <div>Users (enter IDs)</div>
-          {this.renderUserIds()}
-          <input
-            type="text"
-            onChange={this.onCurrentUserIdChange}
-            onKeyUp={this.onUserKeyUp}
-            id="user-id-input"
-          />
-          <Button onClick={this.onAddUser}>
-            Add
-          </Button>
-          <div>Patients (enter IDs)</div>
-          {this.renderPatientIds()}
-          <input
-            type="text"
-            onChange={this.onCurrentPatientIdChange}
-            onKeyUp={this.onPatientKeyUp}
-            id="patient-id-input"
-          />
-          <Button onClick={this.onAddPatient}>
-            Add
-          </Button>
-        </div>
-        <button onClick={this.filterQuery}>Filter</button>
-        <table>
+      <Grid>
+        <Row bsClass="row padded-row">
+          <Col md={12} s={12} xs={12}>
+            <b style={{ fontSize: '20px' }}>Filtering Criteria</b>
+          </Col>
+        </Row>
+        <Row bsClass="row padded-row">
+          <Col md={6} s={12} xs={12}>
+            <label htmlFor="start-time">Start Time</label>
+            <FormControl
+              type="datetime-local"
+              id="start-time"
+              onChange={this.onStartTimeChanged}
+            />
+          </Col>
+          <Col md={6} s={12} xs={12}>
+            <label htmlFor="end-time">End Time</label>
+            <FormControl
+              type="datetime-local"
+              id="end-time"
+              onChange={this.onEndTimeChanged}
+            />
+          </Col>
+        </Row>
+        <Row bsClass="row padded-row">
+          <Col md={12} s={12} xs={12}>
+            <span>Patient IDs</span>
+          </Col>
+        </Row>
+        {this.renderPatientIds()}
+        <Row bsClass="row padded-row">
+          <Col md={6} s={12} xs={12}>
+            <FormControl
+              type="text"
+              onChange={this.onCurrentPatientIdChange}
+              onKeyUp={this.onPatientKeyUp}
+              id="patient-id-input"
+            />
+          </Col>
+          <Col md={6} s={12} xs={12}>
+            <Button onClick={this.onAddPatient}>
+              Add
+            </Button>
+          </Col>
+        </Row>
+        <Row bsClass="row padded-row">
+          <Col md={12} s={12} xs={12}>
+            <span>User IDs</span>
+          </Col>
+        </Row>
+        {this.renderUserIds()}
+        <Row bsClass="row padded-row">
+          <Col md={6} s={12} xs={12}>
+            <FormControl
+              type="text"
+              onChange={this.onCurrentUserIdChange}
+              onKeyUp={this.onUserKeyUp}
+              id="user-id-input"
+            />
+          </Col>
+          <Col md={6} s={12} xs={12}>
+            <Button onClick={this.onAddUser}>
+              Add
+            </Button>
+          </Col>
+        </Row>
+        <Row bsClass="row padded-row">
+          <Col md={12} s={12} xs={12}>
+            <span>Record IDs</span>
+          </Col>
+        </Row>
+        {this.renderRecordIds()}
+        <Row bsClass="row padded-row">
+          <Col md={6} s={12} xs={12}>
+            <FormControl
+              type="text"
+              onChange={this.onCurrentRecordIdChange}
+              onKeyUp={this.onRecordIdKeyUp}
+              id="record-id-input"
+            />
+          </Col>
+          <Col md={6} s={12} xs={12}>
+            <Button onClick={this.onAddRecordId}>
+              Add
+            </Button>
+          </Col>
+        </Row>
+        <Row bsClass="row padded-row">
+          <Col md={4} s={12} xs={12}>
+            <Button bsClass="btn btn-default btn-lg" onClick={this.filterQuery}>Filter</Button>
+          </Col>
+        </Row>
+        <Table>
           <thead>
             <tr>
               <th>Action</th>
@@ -304,8 +358,9 @@ class AuditLogs extends React.Component {
           <tbody>
             {logs}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Grid>
+
     )
   }
 }

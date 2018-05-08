@@ -6,20 +6,14 @@ html
     link(rel='stylesheet', href='../../node_modules/bootstrap/dist/css/bootstrap.min.css')
   body
     nav.navbar.navbar-expand-sm.bg-light.fixed-top
-      ul.navbar-nav.mr-auto(style='width: 100%; padding: 10px 10px 10px 10px')
-        li.nav-item(id='go-home' style='width: 25%; text-align: center') Home
-        li.nav-item(id='view-logs' style='width: 25%; text-align: center') Audit Logs
-        li.nav-item(id='register-user' style='width: 25%; text-align: center') Register User
-        li.nav-item(id='signout-button' style='width: 25%; text-align: center') Sign Out
+      .container
+        ul.navbar-nav.mr-auto(style='width: 100%; padding: 10px 10px 10px 10px')
+          li.nav-item(id='go-home' style='width: 25%; text-align: center') Home
+          li.nav-item(id='view-logs' style='width: 25%; text-align: center') Audit Logs
+          li.nav-item(id='register-user' style='width: 25%; text-align: center') Register User
+          li.nav-item(id='signout-button' style='width: 25%; text-align: center') Sign Out
     .container(style='padding-top: 100px')
       .row
         .col-md-12.col-sm-12.col-xs-12.center-block.text-center(style='padding: 20px 20px 20px 20px')
           h1 Welcome to AuditChain
-      //- .row
-      //-   .col-md-4.col-sm-6.col-xs-12.center-block.text-center(style='padding-bottom: 20px')
-      //-     button.btn.btn-default(id='signout-button') Sign Out
-      //-   .col-md-4.col-sm-6.col-xs-12.center-block.text-center(style='padding-bottom: 20px')
-      //-     button.btn.btn-default(id='register-user') Register New User
-      //-   .col-md-4.col-sm-6.col-xs-12.center-block.text-center(style='padding-bottom: 20px')
-      //-     button.btn.btn-default(id='view-logs') View Audit Logs
     script(type='text/javascript' src='main.js')

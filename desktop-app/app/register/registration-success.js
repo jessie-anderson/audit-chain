@@ -8,13 +8,27 @@ function leavePage(pathname) {
   loadPage(pathname)
 }
 
-$('#return').click(() => {
-  leavePage(path.join(__dirname, '../main/main.jade'))
+$('#signout-button').click(() => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  leavePage(path.join(__dirname, '../index.jade'))
 })
 
-$('#register-another').click(() => {
-  leavePage(path.join(__dirname, 'register.jade'))
+$('#go-home').click(() => {
+  loadPage(path.join(__dirname, '../main/main.jade'))
 })
+
+$('#register-user').click(() => {
+  leavePage(path.join(__dirname, '../register/register.jade'))
+})
+
+$('#view-logs').click(() => {
+  leavePage(path.join(__dirname, '../logs/logs.jade'))
+})
+
+if (JSON.parse(localStorage.getItem('user')).role !== 'admin') {
+  $('#register-user').hide()
+}
 
 $('#temp-username').text(localStorage.getItem('temp-username'))
 

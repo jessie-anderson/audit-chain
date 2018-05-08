@@ -19,4 +19,8 @@ $('#go-home').click(() => {
   loadPage(path.join(__dirname, '../main/main.jade'))
 })
 
+if (JSON.parse(localStorage.getItem('user')).role !== 'admin') {
+  $('#register-user').hide()
+}
+
 ReactDOM.render(<AuditLogs />, $('#logs-container').get(0))
