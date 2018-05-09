@@ -5,20 +5,52 @@ html
     meta(name='viewport' content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='../../node_modules/bootstrap/dist/css/bootstrap.min.css')
   body
-    .title
-      span Set Credentials
-    .username
-      label(htmlFor='username-1') Username
-      input(type='text' id='username-1')
-      label(htmlFor='username-2') Confirm Username
-      input(type='text' id='username-2')
-      span(id='username-error')
-    .password
-      label(htmlFor='password-1') Password
-      input(type='password' id='password-1')
-      label(htmlFor='password-2') Confirm Password
-      input(type='password' id='password-2')
-      span(id='password-error')
-    span(id='request-error')
-    button(id='enroll-button') Enroll
+    .container(style='padding-top: 100px')
+      .row
+        .col-md-12.col-sm-12.col-xs-12.center-block.text-center
+          h1 Set Credentials
+      form(id='enroll-user-form')
+        .row.form-group
+          .col-md-6.col-sm-12.col-xs-12
+            label(htmlFor='username-1') Username
+            input.form-control(type='text' id='username-1')
+          .col-md-6.col-sm-12.col-xs-12
+            label(htmlFor='username-2') Confirm Username
+            input.form-control(type='text' id='username-2')
+        .row
+          .col-md-12.col-sm-12.col-xs-12.center-block.text-center
+            span(id='username-error' style='color: red')
+        .row.form-group
+          .col-md-6.col-sm-12.col-xs-12
+            label(htmlFor='password-1') Password
+            input.form-control(type='password' id='password-1')
+          .col-md-6.col-sm-12.col-xs-12
+            label(htmlFor='password-2') Confirm Password
+            input.form-control(type='password' id='password-2')
+        .row
+          .col-md-12.col-s-12.col-xs-12.center-block.text-center
+            span(id='password-error' style='color: red')
+        .row
+          .col-md-12.col-s-12.col-xs-12.center-block.text-center
+            span(id='request-error' style='color: red')
+        .row.form-group
+          .col-md-12.col-s-12.col-xs-12.center-block.text-center
+            button.btn.btn-default.btn-lg(type='submit') Enroll
+          
+    //- .title
+    //-   span Set Credentials
+    //- .username
+    //-   label(htmlFor='username-1') Username
+    //-   input(type='text' id='username-1')
+    //-   label(htmlFor='username-2') Confirm Username
+    //-   input(type='text' id='username-2')
+    //-   span(id='username-error')
+    //- .password
+    //-   label(htmlFor='password-1') Password
+    //-   input(type='password' id='password-1')
+    //-   label(htmlFor='password-2') Confirm Password
+    //-   input(type='password' id='password-2')
+    //-   span(id='password-error')
+    //- span(id='request-error')
+    //- button(id='enroll-button') Enroll
     script(type='text/javascript' src='enroll.js')
