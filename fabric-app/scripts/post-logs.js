@@ -1,7 +1,34 @@
 const FabricClient = require('fabric-client')
 const path = require('path')
 const fs = require('fs')
-const networkConfig = require('./app/fabric-api/network-config.json')
+const mongoose = require('mongoose')
+const networkConfig = require('../app/fabric-api/network-config.json')
+const utils = require('./utils')
+const User = require('../app/models/user')
+
+mongoose.connect('mongodb://localhost:27017/auditchain')
+
+const actionTypes = [
+  'create',
+  'edit',
+  'delete',
+  'view',
+]
+
+const dataTypes = [
+  'record',
+  'diagnosis',
+  'prescription',
+  'lab result',
+]
+
+const entryMethods = [
+  'copy and paste',
+  'macro',
+  'import',
+  'template',
+  'copy forward',
+]
 
 const fields = [
   'recordId',
@@ -17,21 +44,75 @@ const fields = [
   'originalAuthorNpi',
   'organizationNpi',
 ]
-const requests = []
-for (let i = 0; i < 100; i += 1) {
-  const args = fields.map((f) => {
-    return `${f}:${makeString()}`
-  })
-  console.log(args)
-  args.push(`time:${Date.now()}`)
-  requests.push({
-    chaincodeId: 'encrypted-updates',
-    fcn: 'recordUpdate',
-    args,
-  })
-}
 
-doTransactionRecurse(0)
+const requests = []
+
+const patientsPromise = User.find({ role: 'patient' }).exec()
+const usersPromise = User.find({ $or: [{ role: 'clinician' }, { role: 'admin' }] }).exec()
+
+Promise.all([patientsPromise, usersPromise])
+.then(([patients, users]) => {
+  const patientRecordMapping = {}
+  patients.forEach((p) => {
+    if (!patientRecordMapping[p._id]) {
+      patientRecordMapping[p._id] = []
+    }
+    patientRecordMapping[p._id].push(utils.makeString())
+    patientRecordMapping[p._id].push(utils.makeString())
+  })
+  for (let i = 0; i < 200; i += 1) {
+    const user = users[utils.getRandomIntBetween(0, users.length)]
+    const patient = patients[utils.getRandomIntBetween(0, patients.length)]
+    const recordIds = patientRecordMapping[patient._id]
+    const args = fields.map((f) => {
+      let val
+      switch (f) {
+        default:
+          val = ''
+          break
+        case 'recordId':
+          val = recordIds[utils.getRandomIntBetween(0, recordIds.length)]
+          break
+        case 'dataField':
+        case 'data':
+          val = utils.makeString()
+          break
+        case 'dataType':
+          val = dataTypes[utils.getRandomIntBetween(0, dataTypes.length)]
+          break
+        case 'patientId':
+          val = patient._id
+          break
+        case 'userId':
+          val = user._id
+          break
+        case 'actionType':
+          val = actionTypes[utils.getRandomIntBetween(0, actionTypes.length)]
+          break
+        case 'entryMethod':
+          val = entryMethods[utils.getRandomIntBetween(0, entryMethods.length)]
+          break
+        case 'userNpi':
+          val = user.npi
+          break
+        case 'originalAuthorNpi':
+          val = users[utils.getRandomIntBetween(0, users.length)].npi
+          break
+        case 'organizationNpi':
+          val = utils.getRandomIntBetween(1000000000, 10000000000)
+      }
+      return `${f}:${val}`
+    })
+    args.push(`time:${Date.now()}`)
+    requests.push({
+      chaincodeId: 'encrypted-updates',
+      fcn: 'recordUpdate',
+      args,
+    })
+  }
+  console.log(requests)
+  doTransactionRecurse(0)
+})
 
 function doTransactionRecurse(i) {
   if (i < requests.length) {
@@ -40,17 +121,8 @@ function doTransactionRecurse(i) {
     })
   } else {
     console.log('done')
+    process.exit()
   }
-}
-
-function makeString() {
-  const chars = '1234567890abcdefghijklmnoopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  let s = ''
-  for (let i = 0; i < 10; i += 1) {
-    const idx = Math.floor(Math.random() * chars.length)
-    s = `${s}${chars.charAt(idx)}`
-  }
-  return s
 }
 
 function transaction(request, username, peerName, fn) {
@@ -67,7 +139,7 @@ function transaction(request, username, peerName, fn) {
     pem: Buffer.from(orderPem).toString(),
     'ssl-target-name-override': 'orderer.example.com',
   })
-  const keyStorePath = path.join(__dirname, 'app/fabric-api/hfc-key-store')
+  const keyStorePath = path.join(__dirname, '../app/fabric-api/hfc-key-store')
   let txId
   channel.addPeer(peer)
   channel.addOrderer(order)
